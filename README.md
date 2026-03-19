@@ -1,0 +1,1 @@
+# hachiko-kids-app
