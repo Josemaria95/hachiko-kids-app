@@ -1,0 +1,57 @@
+{
+  "expo": {
+    "name": "Hachiko Kids",
+    "slug": "hachiko-kids",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "hachiko-kids",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F9FAFB"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.jm95.hachikokids",
+      "adaptiveIcon": {
+        "backgroundColor": "#F9FAFB",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "root": "./src"
+        }
+      ],
+      "expo-secure-store",
+      "expo-notifications"
+    ],
+    "extra": {
+      "router": {
+        "root": "./src"
+      },
+      "eas": {
+        "projectId": "e46b24fb-84f8-4168-81ef-99dc6d4cee06"
+      }
+    },
+    "owner": "jm95",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/e46b24fb-84f8-4168-81ef-99dc6d4cee06"
+    }
+  }
+}
