@@ -6,24 +6,60 @@ import { theme } from "../lib/theme";
 
 export default function Index() {
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState<boolean>(false);
+  const [destination, setDestination] = useState<
+    "/(app)/checkin" | "/(app)/welcome-onboarding" | "/(auth)/login" | null
+  >(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(!!s);
+    async function resolve() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        setDestination("/(auth)/login");
+        setLoading(false);
+        return;
+      }
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data: children } = await supabase
+          .from("children")
+          .select("id")
+          .eq("parent_id", user.id)
+          .limit(1);
+
+        if (children && children.length > 0) {
+          setDestination("/(app)/checkin");
+        } else {
+          setDestination("/(app)/welcome-onboarding");
+        }
+      } else {
+        setDestination("/(auth)/login");
+      }
+
       setLoading(false);
-    });
+    }
+
+    resolve();
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(!!s);
+      if (!s) {
+        setDestination("/(auth)/login");
+        setLoading(false);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  if (loading) {
+  if (loading || !destination) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={theme.primary} />
@@ -31,11 +67,7 @@ export default function Index() {
     );
   }
 
-  if (session) {
-    return <Redirect href="/(app)/checkin" />;
-  }
-
-  return <Redirect href="/(auth)/login" />;
+  return <Redirect href={destination} />;
 }
 
 const styles = StyleSheet.create({

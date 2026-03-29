@@ -1,46 +1,45 @@
 import { type ReactNode, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { colors, fonts, theme } from "../lib/theme";
 
 interface Props {
+  badge: string;         // e.g. "IN", "SO"
+  badgeColor: string;
   title: string;
-  iconLabel: string;
-  description: string;
-  detail?: string;
+  subtitle: string;
+  detailText?: string;
   detailContent?: ReactNode;
-  color?: string;
 }
 
 export default function SummaryCard({
+  badge,
+  badgeColor,
   title,
-  iconLabel,
-  description,
-  detail,
+  subtitle,
+  detailText,
   detailContent,
-  color = colors.purple[500],
 }: Props) {
   const [expanded, setExpanded] = useState(false);
-  const hasDetail = !!detail || !!detailContent;
+  const hasDetail = !!detailText || !!detailContent;
 
   return (
-    <Pressable
-      onPress={hasDetail ? () => setExpanded((v) => !v) : undefined}
-      style={[styles.card, { borderLeftColor: color }]}
-    >
+    <Pressable onPress={hasDetail ? () => setExpanded((v) => !v) : undefined} style={styles.card}>
       <View style={styles.header}>
-        <View style={[styles.iconCircle, { backgroundColor: color + "20" }]}>
-          <Text style={[styles.iconText, { color }]}>{iconLabel}</Text>
+        <View style={[styles.badge, { backgroundColor: badgeColor }]}>
+          <Text style={styles.badgeText}>{badge}</Text>
         </View>
-        <Text style={styles.title}>{title}</Text>
+        <View style={styles.info}>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.subtitle}>{subtitle}</Text>
+        </View>
         {hasDetail && (
-          <Text style={styles.chevron}>{expanded ? "\u25B2" : "\u25BC"}</Text>
+          <Text style={[styles.chevron, expanded && styles.chevronOpen]}>▾</Text>
         )}
       </View>
-      <Text style={styles.description}>{description}</Text>
       {expanded && (
-        <View style={styles.detailBox}>
+        <View style={styles.body}>
           {detailContent}
-          {detail && <Text style={styles.detailText}>{detail}</Text>}
+          {detailText ? <Text style={styles.bodyText}>{detailText}</Text> : null}
         </View>
       )}
     </Pressable>
@@ -51,33 +50,63 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.bgCard,
     borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    borderLeftWidth: 4,
+    overflow: "hidden",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
-    shadowRadius: 4,
+    shadowRadius: 8,
     elevation: 2,
   },
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
-  iconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 14,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  badge: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 10,
+    flexShrink: 0,
   },
-  iconText: { fontSize: 14, fontFamily: fonts.bodySemiBold },
-  title: { fontSize: 16, fontFamily: fonts.bodySemiBold, color: theme.dark, flex: 1 },
-  chevron: { fontSize: 12, color: theme.textLight, marginLeft: 8 },
-  description: { fontSize: 14, fontFamily: fonts.body, color: theme.textSecondary, lineHeight: 20 },
-  detailBox: {
-    marginTop: 10,
-    paddingTop: 10,
+  badgeText: {
+    fontFamily: fonts.displayBold,
+    fontSize: 12,
+    color: colors.white,
+  },
+  info: { flex: 1 },
+  title: {
+    fontFamily: fonts.displaySemiBold,
+    fontSize: 15.5,
+    color: theme.dark,
+  },
+  subtitle: {
+    fontSize: 12.5,
+    fontFamily: fonts.body,
+    color: colors.gray[500],
+    marginTop: 2,
+  },
+  chevron: {
+    fontSize: 14,
+    color: colors.gray[300],
+  },
+  chevronOpen: {
+    transform: [{ rotate: "180deg" }],
+  },
+  body: {
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: theme.border,
+    borderTopColor: colors.gray[100],
   },
-  detailText: { fontSize: 13, fontFamily: fonts.body, color: theme.textSecondary, lineHeight: 19 },
+  bodyText: {
+    fontSize: 13,
+    fontFamily: fonts.body,
+    color: colors.gray[500],
+    lineHeight: 21,
+  },
 });

@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hachiko Kids — Onboarding Prototipo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --purple-50: #F0EDFF;
+      --purple-100: #D4CCFF;
+      --purple-500: #7B61FF;
+      --purple-700: #5A3FD6;
+      --purple-900: #2D1F6B;
+      --mint-50: #ECFDF5;
+      --mint-500: #34D399;
+      --mint-700: #059669;
+      --orange-50: #FFF7ED;
+      --orange-500: #F97316;
+      --orange-700: #C2410C;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-300: #D1D5DB;
+      --gray-500: #6B7280;
+      --gray-700: #374151;
+      --gray-900: #111827;
+      --dark: #1E1145;
+      --cream: #FFF8F0;
+      --blue-light: #F0F7FF;
+      --white: #FFFFFF;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--purple-50);
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Phone Frame (desktop) ── */
+    .phone-frame {
+      width: 100%;
+      max-width: 375px;
+      min-height: 100dvh;
+      position: relative;
+      overflow: hidden;
+      background: var(--white);
+    }
+
+    @media (min-width: 421px) {
+      .phone-frame {
+        min-height: 780px;
+        max-height: 860px;
+        height: 92dvh;
+        border-radius: 36px;
+        box-shadow: 0 32px 80px rgba(30, 17, 69, 0.22), 0 8px 24px rgba(123, 97, 255, 0.15);
+        overflow: hidden;
+      }
+      body {
+        padding: 24px;
+      }
+    }
+
+    /* ── Progress Bar ── */
+    .progress-bar-wrap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gray-100);
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .progress-bar-wrap.visible { opacity: 1; }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--purple-500);
+      transition: width 0.4s ease;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ── Back Button ── */
+    .back-btn {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 50;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(8px);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--gray-700);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .back-btn.visible { opacity: 1; pointer-events: auto; }
+
+    /* ── Screens ── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(30px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    .screen.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+    }
+    .screen.exit-left {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+
+    /* ── Phase backgrounds ── */
+    .screen-welcome { background: var(--white); }
+    .screen-data    { background: var(--cream); }
+    .screen-privacy { background: var(--blue-light); }
+    .screen-transition { background: linear-gradient(160deg, #EDE9FF 0%, #D4CCFF 50%, #C4B5FD 100%); }
+
+    /* ── Screen inner layout ── */
+    .screen-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 28px 28px;
+      gap: 0;
+    }
+
+    /* ── Typography ── */
+    .heading {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--dark);
+      text-align: center;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .heading-sm {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--dark);
+      text-align: center;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .subtext {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.93rem;
+      color: var(--gray-500);
+      text-align: center;
+      line-height: 1.55;
+    }
+    .footnote {
+      font-size: 0.78rem;
+      color: var(--gray-300);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* ── Luna image ── */
+    .luna-img {
+      width: 160px;
+      height: 160px;
+      object-fit: contain;
+      animation: float 3s ease-in-out infinite;
+      margin-bottom: 24px;
+      margin-top: 12px;
+    }
+    .luna-img-lg {
+      width: 220px;
+      height: 220px;
+      object-fit: contain;
+      animation: float 3s ease-in-out infinite;
+      margin-bottom: 16px;
+    }
+    .luna-img-md {
+      width: 130px;
+      height: 130px;
+      object-fit: contain;
+      animation: float 3s ease-in-out infinite;
+      margin-bottom: 20px;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      width: 100%;
+      padding: 18px;
+      border: none;
+      border-radius: 50px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+      letter-spacing: 0.01em;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: var(--purple-500);
+      color: var(--white);
+      box-shadow: 0 6px 20px rgba(123, 97, 255, 0.35);
+    }
+    .btn-primary:hover:not(:disabled) {
+      box-shadow: 0 8px 28px rgba(123, 97, 255, 0.45);
+    }
+    .btn-mint {
+      background: var(--mint-500);
+      color: var(--white);
+      box-shadow: 0 6px 20px rgba(52, 211, 153, 0.35);
+    }
+    .btn-mint:hover:not(:disabled) {
+      box-shadow: 0 8px 28px rgba(52, 211, 153, 0.45);
+    }
+    .btn-accent {
+      background: var(--orange-500);
+      color: var(--white);
+      box-shadow: 0 6px 20px rgba(249, 115, 22, 0.38);
+      font-size: 1.1rem;
+    }
+    .btn-accent:hover:not(:disabled) {
+      box-shadow: 0 8px 28px rgba(249, 115, 22, 0.5);
+    }
+
+    .btn-wrap {
+      width: 100%;
+      margin-top: auto;
+      padding-top: 16px;
+    }
+
+    /* ── Value Prop Bubbles ── */
+    .value-bubbles {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      margin: 16px 0;
+    }
+    .value-bubble {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: var(--purple-50);
+      border-radius: 16px;
+      padding: 14px 16px;
+    }
+    .bubble-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .bubble-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .bubble-title {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    .bubble-desc {
+      font-size: 0.82rem;
+      color: var(--gray-500);
+      line-height: 1.45;
+    }
+
+    /* ── Info Block ── */
+    .info-block {
+      width: 100%;
+      background: var(--purple-50);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .info-block-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+    .info-block-text {
+      font-size: 0.83rem;
+      color: var(--gray-500);
+      line-height: 1.5;
+    }
+
+    /* ── Text Input ── */
+    .input-wrap { width: 100%; margin: 20px 0 0; }
+    .text-input {
+      width: 100%;
+      border: 2px solid var(--gray-200);
+      border-radius: 14px;
+      padding: 16px 20px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--dark);
+      text-align: center;
+      background: var(--white);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .text-input:focus {
+      border-color: var(--purple-500);
+      box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.12);
+    }
+    .text-input::placeholder { color: var(--gray-300); }
+
+    /* ── Age Grid ── */
+    .age-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      width: 100%;
+      margin: 20px 0 0;
+    }
+    .age-chip {
+      background: var(--white);
+      border: 2px solid var(--gray-200);
+      border-radius: 14px;
+      padding: 14px 8px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--gray-700);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .age-chip:hover { border-color: var(--purple-100); background: var(--purple-50); }
+    .age-chip.selected {
+      border-color: var(--purple-500);
+      background: var(--purple-50);
+      color: var(--purple-700);
+    }
+    .age-chip-label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      align-items: center;
+    }
+    .age-chip-num { font-size: 1.4rem; line-height: 1; }
+    .age-chip-word { font-size: 0.65rem; font-weight: 400; color: var(--gray-500); letter-spacing: 0.02em; }
+
+    /* ── Relationship Chips ── */
+    .rel-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin: 20px 0 0;
+      width: 100%;
+    }
+    .rel-chip {
+      background: var(--white);
+      border: 2px solid var(--gray-200);
+      border-radius: 50px;
+      padding: 12px 22px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--gray-700);
+      cursor: pointer;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .rel-chip:hover { border-color: var(--purple-100); background: var(--purple-50); }
+    .rel-chip.selected {
+      border-color: var(--purple-500);
+      background: var(--purple-50);
+      color: var(--purple-700);
+    }
+    .rel-chip-icon { font-size: 1.2rem; }
+
+    /* ── Privacy bullets ── */
+    .privacy-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      margin: 16px 0;
+    }
+    .privacy-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: rgba(255,255,255,0.65);
+      border-radius: 14px;
+      padding: 13px 15px;
+    }
+    .privacy-icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .privacy-text {
+      font-size: 0.87rem;
+      color: var(--gray-700);
+      line-height: 1.45;
+      font-weight: 500;
+    }
+    .privacy-text span {
+      display: block;
+      font-weight: 400;
+      color: var(--gray-500);
+      font-size: 0.8rem;
+      margin-top: 1px;
+    }
+
+    /* ── Loading bar ── */
+    .loading-wrap {
+      width: 100%;
+      margin: 32px 0 8px;
+    }
+    .loading-track {
+      width: 100%;
+      height: 8px;
+      background: rgba(123, 97, 255, 0.15);
+      border-radius: 50px;
+      overflow: hidden;
+    }
+    .loading-fill {
+      height: 100%;
+      background: var(--purple-500);
+      border-radius: 50px;
+      width: 0%;
+      transition: none;
+    }
+    .loading-fill.animate {
+      animation: fillBar 3s ease-in-out forwards;
+    }
+    .loading-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.83rem;
+      color: var(--purple-700);
+      text-align: center;
+      margin-top: 10px;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    .loading-label.visible { opacity: 1; }
+
+    /* ── Handoff screen ── */
+    .handoff-badge {
+      background: var(--orange-50);
+      border: 2px solid rgba(249,115,22,0.2);
+      border-radius: 50px;
+      padding: 8px 18px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--orange-500);
+      margin-bottom: 8px;
+    }
+
+    /* ── Animations ── */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-10px); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fillBar {
+      0%   { width: 0%; }
+      60%  { width: 75%; }
+      100% { width: 100%; }
+    }
+
+    /* Screen enter animation helper */
+    .screen.active .screen-content > * {
+      animation: fadeInUp 0.45s ease both;
+    }
+    .screen.active .screen-content > *:nth-child(1) { animation-delay: 0.05s; }
+    .screen.active .screen-content > *:nth-child(2) { animation-delay: 0.12s; }
+    .screen.active .screen-content > *:nth-child(3) { animation-delay: 0.18s; }
+    .screen.active .screen-content > *:nth-child(4) { animation-delay: 0.24s; }
+    .screen.active .screen-content > *:nth-child(5) { animation-delay: 0.29s; }
+    .screen.active .screen-content > *:nth-child(6) { animation-delay: 0.33s; }
+
+    /* ── Dev skip bar (prototype only) ── */
+    .dev-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(30,17,69,0.85);
+      backdrop-filter: blur(8px);
+      border-radius: 12px 12px 0 0;
+      padding: 8px 16px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      z-index: 999;
+      max-width: 375px;
+      width: 100%;
+    }
+    .dev-bar-label {
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.4);
+      font-family: 'Inter', monospace;
+      white-space: nowrap;
+      margin-right: 4px;
+    }
+    .dev-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      flex-shrink: 0;
+    }
+    .dev-dot:hover  { background: rgba(255,255,255,0.55); transform: scale(1.3); }
+    .dev-dot.active { background: var(--purple-500); }
+  </style>
+</head>
+<body>
+
+<div class="phone-frame" id="phoneFrame">
+
+  <!-- Progress Bar -->
+  <div class="progress-bar-wrap" id="progressWrap">
+    <div class="progress-bar-fill" id="progressFill"></div>
+  </div>
+
+  <!-- Back Button -->
+  <button class="back-btn" id="backBtn" onclick="goBack()" aria-label="Volver">←</button>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <!-- SCREEN 0 — Welcome                -->
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div class="screen screen-welcome active" id="screen-0">
+    <div class="screen-content" style="justify-content: center; padding-top: 48px;">
+      <img
+        src="../../landing/img/gato.png"
+        alt="Luna, la mascota"
+        class="luna-img"
+        onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22160%22 height=%22160%22><circle cx=%2280%22 cy=%2280%22 r=%2270%22 fill=%22%23F0EDFF%22/><text x=%2250%%25%22 y=%2255%%25%22 font-size=%2260%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22>🐱</text></svg>'"
+      >
+      <h1 class="heading">Entiende a tu hijo<br>a través de Luna</h1>
+      <p class="subtext" style="max-width: 300px; margin-bottom: 32px;">
+        Tu hijo cuida una mascota virtual.<br>
+        Tú recibes patrones de su comportamiento<br>y tips concretos cada semana.
+      </p>
+      <div class="btn-wrap" style="padding-top: 0;">
+        <button class="btn btn-primary" onclick="goToStep(1)">Siguiente</button>
+        <p class="footnote" style="margin-top: 12px;">Sin diagnósticos. Sin culpa. Solo claridad.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <!-- SCREEN 1 — Propuesta de valor     -->
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div class="screen screen-welcome" id="screen-1">
+    <div class="screen-content">
+      <h1 class="heading" style="margin-top: 16px;">Lo que vas<br>a descubrir</h1>
+      <div class="value-bubbles" style="margin-top: 20px;">
+        <div class="value-bubble">
+          <div class="bubble-icon">📅</div>
+          <div class="bubble-text">
+            <div class="bubble-title">Resúmenes semanales</div>
+            <div class="bubble-desc">Cada lunes recibes qué pasó con tu hijo esta semana: qué patrones se repiten y cómo hablar sobre eso.</div>
+          </div>
+        </div>
+        <div class="value-bubble">
+          <div class="bubble-icon">📊</div>
+          <div class="bubble-text">
+            <div class="bubble-title">Patrones de comportamiento</div>
+            <div class="bubble-desc">Visualiza cómo reacciona ante distintas situaciones: instrucciones, conflictos, emociones intensas.</div>
+          </div>
+        </div>
+        <div class="value-bubble">
+          <div class="bubble-icon">🎯</div>
+          <div class="bubble-text">
+            <div class="bubble-title">Tips accionables</div>
+            <div class="bubble-desc">No solo "qué pasa" sino "qué puedes hacer esta semana" — concreto y sin culpa.</div>
+          </div>
+        </div>
+      </div>
+      <div class="btn-wrap">
+        <button class="btn btn-primary" onclick="goToStep(2)">Empezar configuración</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <!-- SCREEN 2 — Nombre del niño        -->
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div class="screen screen-data" id="screen-2">
+    <div class="screen-content">
+      <img
+        src="../../landing/img/gato.png"
+        alt="Luna"
+        class="luna-img-md"
+        onerror="this.style.fontSize='60px'; this.style.background='none'; this.alt='🐱';"
+      >
+      <h1 class="heading-sm">¿Cómo se llama<br>tu hijo/a?</h1>
+      <p class="subtext">Para que Luna lo llame por su nombre.</p>
+      <div class="input-wrap">
+        <input
+          type="text"
+          class="text-input"
+          id="nameInput"
+          placeholder="Ej: Sofía, Mateo..."
+          maxlength="30"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          oninput="updateName()"
+        >
+      </div>
+      <div class="info-block" style="margin-top: 14px;">
+        <div class="info-block-icon">💡</div>
+        <div class="info-block-text">Para personalizar la experiencia y que Luna lo llame por su nombre en cada sesión.</div>
+      </div>
+      <div class="btn-wrap">
+        <button class="btn btn-primary" id="btnName" onclick="goToStep(3)" disabled>Siguiente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <!-- SCREEN 3 — Edad                   -->
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div class="screen screen-data" id="screen-3">
+    <div class="screen-content">
+      <h1 class="heading-sm">¿Cuántos años tiene<br><span data-name style="color: var(--purple-500);">tu hijo/a</span>?</h1>
+      <p class="subtext">Adaptamos los escenarios a su nivel de desarrollo.</p>
+      <div class="age-grid">
+        <div class="age-chip" onclick="selectAge(4)" id="age-4">
+          <div class="age-chip-label">
+            <span class="age-chip-num">4</span>
+            <span class="age-chip-word">años</span>
+          </div>
+        </div>
+        <div class="age-chip" onclick="selectAge(5)" id="age-5">
+          <div class="age-chip-label">
+            <span class="age-chip-num">5</span>
+            <span class="age-chip-word">años</span>
+          </div>
+        </div>
+        <div class="age-chip" onclick="selectAge(6)" id="age-6">
+          <div class="age-chip-label">
+            <span class="age-chip-num">6</span>
+            <span class="age-chip-word">años</span>
+          </div>
+        </div>
+        <div class="age-chip selected" onclick="selectAge(7)" id="age-7">
+          <div class="age-chip-label">
+            <span class="age-chip-num">7</span>
+            <span class="age-chip-word">años</span>
+          </div>
+        </div>
+        <div class="age-chip" onclick="selectAge(8)" id="age-8">
+          <div class="age-chip-label">
+            <span class="age-chip-num">8</span>
+            <span class="age-chip-word">años</span>
+          </div>
+        </div>
+        <div class="age-chip" onclick="selectAge(9)" id="age-9">
+          <div class="age-chip-label">
+            <span class="age-chip-num">9</span>
+            <span class="age-chip-word">años</span>
+          </div>
+        </div>
+        <div class="age-chip" onclick="selectAge(10)" id="age-10">
+          <div class="age-chip-label">
+            <span class="age-chip-num">10</span>
+            <span class="age-chip-word">años</span>
+          </div>
+        </div>
+        <div class="age-chip" onclick="selectAge(11)" id="age-11">
+          <div class="age-chip-label">
+            <span class="age-chip-num">11</span>
+            <span class="age-chip-word">años</span>
+          </div>
+        </div>
+        <div class="age-chip" onclick="selectAge(12)" id="age-12">
+          <div class="age-chip-label">
+            <span class="age-chip-num">12</span>
+            <span class="age-chip-word">años</span>
+          </div>
+        </div>
+      </div>
+      <div class="info-block" style="margin-top: 14px;">
+        <div class="info-block-icon">💡</div>
+        <div class="info-block-text">Adaptamos los escenarios y el lenguaje al nivel de desarrollo de <strong data-name>tu hijo/a</strong>.</div>
+      </div>
+      <div class="btn-wrap">
+        <button class="btn btn-primary" onclick="goToStep(4)">Siguiente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <!-- SCREEN 4 — Relación               -->
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div class="screen screen-data" id="screen-4">
+    <div class="screen-content">
+      <h1 class="heading-sm">¿Cuál es tu relación<br>con <span data-name style="color: var(--purple-500);">tu hijo/a</span>?</h1>
+      <p class="subtext">Para personalizar los tips que recibes.</p>
+      <div class="rel-chips">
+        <div class="rel-chip" onclick="selectRelationship('mama')" id="rel-mama">
+          <span class="rel-chip-icon">👩</span> Mamá
+        </div>
+        <div class="rel-chip" onclick="selectRelationship('papa')" id="rel-papa">
+          <span class="rel-chip-icon">👨</span> Papá
+        </div>
+        <div class="rel-chip" onclick="selectRelationship('abuelo')" id="rel-abuelo">
+          <span class="rel-chip-icon">👴</span> Abuelo/a
+        </div>
+        <div class="rel-chip" onclick="selectRelationship('tutor')" id="rel-tutor">
+          <span class="rel-chip-icon">🧑‍⚕️</span> Tutor/a
+        </div>
+        <div class="rel-chip" onclick="selectRelationship('otro')" id="rel-otro">
+          <span class="rel-chip-icon">👥</span> Otro
+        </div>
+      </div>
+      <div class="info-block" style="margin-top: 14px;">
+        <div class="info-block-icon">💡</div>
+        <div class="info-block-text">Para personalizar los tips y recomendaciones que recibas cada semana.</div>
+      </div>
+      <div class="btn-wrap">
+        <button class="btn btn-primary" id="btnRel" onclick="goToStep(5)" disabled>Siguiente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <!-- SCREEN 5 — Privacidad             -->
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div class="screen screen-privacy" id="screen-5">
+    <div class="screen-content">
+      <div style="font-size: 3rem; margin-bottom: 8px; margin-top: 8px;">🔒</div>
+      <h1 class="heading-sm">Los datos de<br><span data-name style="color: var(--purple-500);">tu hijo/a</span> están seguros</h1>
+      <p class="subtext" style="margin-bottom: 0;">Antes de continuar, queremos ser transparentes.</p>
+      <div class="privacy-list">
+        <div class="privacy-item">
+          <div class="privacy-icon">🚫</div>
+          <div class="privacy-text">
+            Nunca vendemos datos de niños
+            <span>La información de <span data-name>tu hijo/a</span> no se vende ni se comparte con terceros.</span>
+          </div>
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-icon">🏷️</div>
+          <div class="privacy-text">
+            Sin etiquetas clínicas
+            <span>Hachiko identifica patrones conductuales, no hace diagnósticos.</span>
+          </div>
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-icon">👁️</div>
+          <div class="privacy-text">
+            Solo tú ves la información
+            <span>Los datos de <span data-name>tu hijo/a</span> no se comparten con colegios sin tu permiso.</span>
+          </div>
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-icon">🗑️</div>
+          <div class="privacy-text">
+            Puedes eliminar todo
+            <span>En cualquier momento puedes borrar la cuenta y todos los datos asociados.</span>
+          </div>
+        </div>
+      </div>
+      <div class="btn-wrap" style="padding-top: 0;">
+        <button class="btn btn-mint" onclick="goToStep(6)">Acepto y continúo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <!-- SCREEN 6 — Loading                -->
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div class="screen screen-transition" id="screen-6">
+    <div class="screen-content" style="justify-content: center; align-items: center;">
+      <img
+        src="../../landing/img/gato.png"
+        alt="Luna preparándose"
+        class="luna-img-lg"
+        style="margin-top: 0;"
+        onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><circle cx=%22100%22 cy=%22100%22 r=%2290%22 fill=%22%23D4CCFF%22/><text x=%2250%%25%22 y=%2255%%25%22 font-size=%2280%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22>🐱</text></svg>'"
+      >
+      <h1 class="heading" style="color: var(--dark);">Preparando el<br>mundo de Luna…</h1>
+      <div class="loading-wrap">
+        <div class="loading-track">
+          <div class="loading-fill" id="loadingFill"></div>
+        </div>
+        <p class="loading-label" id="loadingLabel">
+          Personalizando escenarios para <strong data-name>tu hijo/a</strong>…
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <!-- SCREEN 7 — Handoff                -->
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div class="screen screen-transition" id="screen-7">
+    <div class="screen-content" style="justify-content: center; align-items: center; text-align: center;">
+      <div class="handoff-badge">¡Todo listo!</div>
+      <img
+        src="../../landing/img/gato.png"
+        alt="Luna lista"
+        class="luna-img-lg"
+        onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><circle cx=%22100%22 cy=%22100%22 r=%2290%22 fill=%22%23D4CCFF%22/><text x=%2250%%25%22 y=%2255%%25%22 font-size=%2280%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22>🐱</text></svg>'"
+      >
+      <h1 class="heading" style="color: var(--dark); font-size: 2rem;">¡Pásale el teléfono<br>a <span data-name style="color: var(--purple-700);">tu hijo/a</span>!</h1>
+      <p class="subtext" style="margin-top: 8px; font-size: 0.95rem;">
+        Es hora de que <strong data-name>tu hijo/a</strong> conozca<br>a su nueva amiga Luna 🐱
+      </p>
+      <div class="btn-wrap" style="padding-top: 24px;">
+        <button class="btn btn-accent" onclick="restartDemo()">¡Empezar!</button>
+        <p class="footnote" style="margin-top: 10px; color: var(--purple-900); opacity: 0.5;">— Prototipo de validación —</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<!-- Dev nav bar -->
+<div class="dev-bar" id="devBar">
+  <span class="dev-bar-label">pantallas →</span>
+  <div class="dev-dot active" id="dot-0" onclick="goToStep(0)" title="Welcome"></div>
+  <div class="dev-dot" id="dot-1" onclick="goToStep(1)" title="Valor"></div>
+  <div class="dev-dot" id="dot-2" onclick="goToStep(2)" title="Nombre"></div>
+  <div class="dev-dot" id="dot-3" onclick="goToStep(3)" title="Edad"></div>
+  <div class="dev-dot" id="dot-4" onclick="goToStep(4)" title="Relación"></div>
+  <div class="dev-dot" id="dot-5" onclick="goToStep(5)" title="Privacidad"></div>
+  <div class="dev-dot" id="dot-6" onclick="goToStep(6)" title="Loading"></div>
+  <div class="dev-dot" id="dot-7" onclick="goToStep(7)" title="Handoff"></div>
+</div>
+
+<script>
+  /* ── State ── */
+  const state = {
+    currentStep: 0,
+    childName: '',
+    childAge: 7,
+    relationship: null,
+    loadingTimer: null,
+  };
+
+  const TOTAL_STEPS = 8;
+  // Progress visible on steps 2-5 (data phase)
+  const PROGRESS_STEPS = [2, 3, 4, 5];
+  const PROGRESS_MAX = 4; // 4 steps in progress phase
+
+  /* ── Core navigation ── */
+  function goToStep(n) {
+    if (n < 0 || n >= TOTAL_STEPS) return;
+
+    const prev = document.getElementById(`screen-${state.currentStep}`);
+    const next = document.getElementById(`screen-${n}`);
+    if (!next) return;
+
+    // Clear loading timer if navigating away from loading screen
+    if (state.currentStep === 6 && state.loadingTimer) {
+      clearTimeout(state.loadingTimer);
+      state.loadingTimer = null;
+    }
+
+    // Animate out current
+    prev.classList.remove('active');
+    prev.classList.add('exit-left');
+    setTimeout(() => prev.classList.remove('exit-left'), 400);
+
+    // Animate in next
+    next.classList.add('active');
+
+    state.currentStep = n;
+
+    updateProgressBar();
+    updateBackButton();
+    updateDevDots();
+
+    // Auto-advance loading screen
+    if (n === 6) {
+      startLoading();
+    }
+  }
+
+  function goBack() {
+    if (state.currentStep > 0) {
+      goToStep(state.currentStep - 1);
+    }
+  }
+
+  function restartDemo() {
+    // Reset state
+    state.childName = '';
+    state.childAge = 7;
+    state.relationship = null;
+
+    // Reset inputs
+    document.getElementById('nameInput').value = '';
+    document.getElementById('btnName').disabled = true;
+    document.getElementById('btnRel').disabled = true;
+
+    // Reset age selection
+    document.querySelectorAll('.age-chip').forEach(c => c.classList.remove('selected'));
+    document.getElementById('age-7').classList.add('selected');
+
+    // Reset relationship chips
+    document.querySelectorAll('.rel-chip').forEach(c => c.classList.remove('selected'));
+
+    // Reset name placeholders
+    injectName();
+
+    goToStep(0);
+  }
+
+  /* ── Progress bar ── */
+  function updateProgressBar() {
+    const wrap = document.getElementById('progressWrap');
+    const fill = document.getElementById('progressFill');
+    const step = state.currentStep;
+
+    if (PROGRESS_STEPS.includes(step)) {
+      wrap.classList.add('visible');
+      const idx = PROGRESS_STEPS.indexOf(step) + 1;
+      fill.style.width = `${(idx / PROGRESS_MAX) * 100}%`;
+    } else {
+      wrap.classList.remove('visible');
+    }
+  }
+
+  /* ── Back button ── */
+  function updateBackButton() {
+    const btn = document.getElementById('backBtn');
+    const step = state.currentStep;
+    // Show on steps 1-5 (not on loading / handoff)
+    if (step >= 1 && step <= 5) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  }
+
+  /* ── Dev dots ── */
+  function updateDevDots() {
+    document.querySelectorAll('.dev-dot').forEach((dot, i) => {
+      dot.classList.toggle('active', i === state.currentStep);
+    });
+  }
+
+  /* ── Name input ── */
+  function updateName() {
+    const val = document.getElementById('nameInput').value.trim();
+    state.childName = val;
+    injectName();
+    document.getElementById('btnName').disabled = val.length < 2;
+  }
+
+  function injectName() {
+    const name = state.childName || 'tu hijo/a';
+    document.querySelectorAll('[data-name]').forEach(el => {
+      el.textContent = name;
+    });
+  }
+
+  /* ── Age selection ── */
+  function selectAge(age) {
+    state.childAge = age;
+    document.querySelectorAll('.age-chip').forEach(c => c.classList.remove('selected'));
+    const chip = document.getElementById(`age-${age}`);
+    if (chip) chip.classList.add('selected');
+  }
+
+  /* ── Relationship selection ── */
+  function selectRelationship(rel) {
+    state.relationship = rel;
+    document.querySelectorAll('.rel-chip').forEach(c => c.classList.remove('selected'));
+    const chip = document.getElementById(`rel-${rel}`);
+    if (chip) chip.classList.add('selected');
+    document.getElementById('btnRel').disabled = false;
+  }
+
+  /* ── Loading screen ── */
+  function startLoading() {
+    const fill = document.getElementById('loadingFill');
+    const label = document.getElementById('loadingLabel');
+
+    // Reset
+    fill.classList.remove('animate');
+    label.classList.remove('visible');
+    void fill.offsetWidth; // reflow to restart animation
+
+    // Start
+    fill.classList.add('animate');
+    setTimeout(() => label.classList.add('visible'), 600);
+
+    // Auto-advance after 3.2s
+    state.loadingTimer = setTimeout(() => {
+      state.loadingTimer = null;
+      goToStep(7);
+    }, 3200);
+  }
+
+  /* ── Init ── */
+  injectName();
+  updateProgressBar();
+  updateBackButton();
+</script>
+</body>
+</html>

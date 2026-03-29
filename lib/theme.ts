@@ -5,8 +5,8 @@ export const colors = {
   purple: {
     50: "#F0EDFF",
     100: "#D4CCFF",
-    200: "#B8AAFF",
-    300: "#9C88FF",
+    200: "#C4BCFF",
+    300: "#A89CFF",
     500: "#7B61FF",
     700: "#5A3FD6",
     900: "#2D1F6B",
@@ -65,6 +65,8 @@ export const theme = {
   textLight: colors.gray[300],
   dark: colors.dark,
   border: colors.gray[200],
+  bgCream: '#FFF8F0',
+  bgBlueLight: '#F0F7FF',
 };
 
 export const fonts = {

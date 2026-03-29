@@ -31,6 +31,8 @@ export interface Parent {
   id: string;           // uuid, matches auth.users.id
   email: string;
   created_at: string;
+  relationship?: string | null;
+  consent_at?: string | null;
   // Phase 3 additions
   role: ParentRole | null;
   display_name: string | null;

@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hachiko Kids — Prototipo Completo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --purple-50: #F0EDFF;
+      --purple-100: #D4CCFF;
+      --purple-200: #C4BCFF;
+      --purple-300: #A89CFF;
+      --purple-500: #7B61FF;
+      --purple-700: #5A3FD6;
+      --purple-900: #2D1F6B;
+      --mint-50: #ECFDF5;
+      --mint-100: #D1FAE5;
+      --mint-300: #6EE7B7;
+      --mint-500: #34D399;
+      --mint-700: #059669;
+      --orange-50: #FFF7ED;
+      --orange-200: #FED7AA;
+      --orange-300: #FDBA74;
+      --orange-500: #F97316;
+      --orange-700: #C2410C;
+      --red-50: #FFF5F5;
+      --red-500: #EF4444;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-300: #D1D5DB;
+      --gray-500: #6B7280;
+      --gray-700: #374151;
+      --gray-900: #111827;
+      --dark: #1E1145;
+      --cream: #FFF8F0;
+      --blue-light: #F0F7FF;
+      --white: #FFFFFF;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--purple-50);
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Phone Frame ── */
+    .phone-frame {
+      width: 100%;
+      max-width: 375px;
+      min-height: 100dvh;
+      position: relative;
+      overflow: hidden;
+      background: var(--white);
+    }
+    @media (min-width: 421px) {
+      .phone-frame {
+        min-height: 780px;
+        max-height: 860px;
+        height: 92dvh;
+        border-radius: 36px;
+        box-shadow: 0 32px 80px rgba(30,17,69,0.22), 0 8px 24px rgba(123,97,255,0.15);
+        overflow: hidden;
+      }
+      body { padding: 24px 24px 56px; }
+    }
+
+    /* ── Progress Bar ── */
+    .progress-bar-wrap {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 4px; background: var(--gray-100);
+      z-index: 100; opacity: 0; transition: opacity 0.3s;
+    }
+    .progress-bar-wrap.visible { opacity: 1; }
+    .progress-bar-fill {
+      height: 100%; background: var(--purple-500);
+      transition: width 0.4s ease; border-radius: 0 2px 2px 0;
+    }
+
+    /* ── Back Button ── */
+    .back-btn {
+      position: absolute; top: 16px; left: 16px; z-index: 50;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(255,255,255,0.85); backdrop-filter: blur(8px);
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: var(--gray-700);
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .back-btn.visible { opacity: 1; pointer-events: auto; }
+
+    /* ── Screens ── */
+    .screen {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      opacity: 0; pointer-events: none;
+      transform: translateX(30px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      overflow-x: hidden;
+    }
+    .screen.active { opacity: 1; pointer-events: auto; transform: translateX(0); }
+    .screen.exit-left { opacity: 0; transform: translateX(-30px); }
+    .screen-scrollable { overflow-y: auto; }
+
+    /* ── Phase backgrounds ── */
+    .bg-white  { background: var(--white); }
+    .bg-cream  { background: var(--cream); }
+    .bg-blue   { background: var(--blue-light); }
+    .bg-gray   { background: var(--gray-50); }
+    .bg-grad   { background: linear-gradient(160deg, #EDE9FF 0%, #D4CCFF 50%, #C4B5FD 100%); }
+
+    /* ── Screen inner layout ── */
+    .screen-content {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; padding: 60px 28px 100px; gap: 0;
+    }
+    .screen-content.centered { justify-content: center; padding-top: 48px; }
+
+    /* ── Typography ── */
+    .heading {
+      font-family: 'Fredoka', sans-serif; font-size: 1.75rem;
+      font-weight: 600; color: var(--dark); text-align: center;
+      line-height: 1.2; margin-bottom: 12px;
+    }
+    .heading-sm {
+      font-family: 'Fredoka', sans-serif; font-size: 1.4rem;
+      font-weight: 600; color: var(--dark); text-align: center;
+      line-height: 1.25; margin-bottom: 10px;
+    }
+    .heading-xs {
+      font-family: 'Fredoka', sans-serif; font-size: 1.15rem;
+      font-weight: 600; color: var(--dark); text-align: center;
+      line-height: 1.3; margin-bottom: 8px;
+    }
+    .subtext {
+      font-family: 'Inter', sans-serif; font-size: 0.93rem;
+      color: var(--gray-500); text-align: center; line-height: 1.55;
+    }
+    .footnote { font-size: 0.78rem; color: var(--gray-300); text-align: center; margin-top: 8px; }
+
+    /* ── Buttons ── */
+    .btn {
+      width: 100%; padding: 17px; border: none; border-radius: 50px;
+      font-family: 'Fredoka', sans-serif; font-size: 1.05rem;
+      font-weight: 600; cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+      letter-spacing: 0.01em;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--purple-500); color: var(--white); box-shadow: 0 6px 20px rgba(123,97,255,0.35); }
+    .btn-primary:hover:not(:disabled) { box-shadow: 0 8px 28px rgba(123,97,255,0.45); }
+    .btn-mint { background: var(--mint-500); color: var(--white); box-shadow: 0 6px 20px rgba(52,211,153,0.35); }
+    .btn-mint:hover:not(:disabled) { box-shadow: 0 8px 28px rgba(52,211,153,0.45); }
+    .btn-accent { background: var(--orange-500); color: var(--white); box-shadow: 0 6px 20px rgba(249,115,22,0.38); font-size: 1.1rem; }
+    .btn-accent:hover:not(:disabled) { box-shadow: 0 8px 28px rgba(249,115,22,0.5); }
+    .btn-ghost { background: transparent; color: var(--purple-500); font-size: 0.9rem; font-weight: 500; box-shadow: none; padding: 12px; }
+    .btn-wrap { width: 100%; margin-top: auto; padding-top: 16px; }
+
+    /* ── Auth input ── */
+    .auth-input-group { width: 100%; display: flex; flex-direction: column; gap: 12px; margin: 20px 0 0; }
+    .auth-input-label { font-size: 0.82rem; font-weight: 600; color: var(--gray-700); margin-bottom: 4px; display: block; text-align: left; }
+    .auth-input {
+      width: 100%; border: 2px solid var(--gray-200); border-radius: 14px;
+      padding: 14px 18px; font-family: 'Inter', sans-serif; font-size: 0.95rem;
+      font-weight: 400; color: var(--dark); background: var(--white);
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .auth-input:focus { border-color: var(--purple-500); box-shadow: 0 0 0 3px rgba(123,97,255,0.12); }
+    .auth-input::placeholder { color: var(--gray-300); }
+    .auth-link { font-size: 0.88rem; color: var(--purple-500); text-align: center; margin-top: 14px; cursor: pointer; font-weight: 500; }
+    .auth-link:hover { text-decoration: underline; }
+
+    /* ── Text Input (centered, Fredoka) ── */
+    .input-wrap { width: 100%; margin: 20px 0 0; }
+    .text-input {
+      width: 100%; border: 2px solid var(--gray-200); border-radius: 14px;
+      padding: 16px 20px; font-family: 'Fredoka', sans-serif; font-size: 1.2rem;
+      font-weight: 500; color: var(--dark); text-align: center; background: var(--white);
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .text-input:focus { border-color: var(--purple-500); box-shadow: 0 0 0 3px rgba(123,97,255,0.12); }
+    .text-input::placeholder { color: var(--gray-300); }
+
+    /* ── Info Block ── */
+    .info-block {
+      width: 100%; background: var(--purple-50); border-radius: 14px;
+      padding: 14px 16px; display: flex; align-items: flex-start;
+      gap: 10px; margin-top: 12px;
+    }
+    .info-block-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+    .info-block-text { font-size: 0.83rem; color: var(--gray-500); line-height: 1.5; }
+
+    /* ── Value Prop Bubbles ── */
+    .value-bubbles { display: flex; flex-direction: column; gap: 12px; width: 100%; margin: 16px 0; }
+    .value-bubble { display: flex; align-items: flex-start; gap: 14px; background: var(--purple-50); border-radius: 16px; padding: 14px 16px; }
+    .bubble-icon { font-size: 1.5rem; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+    .bubble-text { display: flex; flex-direction: column; gap: 2px; }
+    .bubble-title { font-family: 'Fredoka', sans-serif; font-size: 0.95rem; font-weight: 600; color: var(--dark); }
+    .bubble-desc { font-size: 0.82rem; color: var(--gray-500); line-height: 1.45; }
+
+    /* ── Age Grid ── */
+    .age-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; margin: 20px 0 0; }
+    .age-chip {
+      background: var(--white); border: 2px solid var(--gray-200); border-radius: 14px;
+      padding: 14px 8px; font-family: 'Fredoka', sans-serif; font-size: 1.1rem;
+      font-weight: 600; color: var(--gray-700); text-align: center; cursor: pointer;
+      transition: all 0.18s;
+    }
+    .age-chip:hover { border-color: var(--purple-100); background: var(--purple-50); }
+    .age-chip.selected { border-color: var(--purple-500); background: var(--purple-50); color: var(--purple-700); }
+    .age-chip-label { display: flex; flex-direction: column; gap: 2px; align-items: center; }
+    .age-chip-num { font-size: 1.4rem; line-height: 1; }
+    .age-chip-word { font-size: 0.65rem; font-weight: 400; color: var(--gray-500); letter-spacing: 0.02em; }
+
+    /* ── Relationship Chips ── */
+    .rel-chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 20px 0 0; width: 100%; }
+    .rel-chip {
+      background: var(--white); border: 2px solid var(--gray-200); border-radius: 50px;
+      padding: 12px 22px; font-family: 'Fredoka', sans-serif; font-size: 1rem;
+      font-weight: 500; color: var(--gray-700); cursor: pointer; transition: all 0.18s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .rel-chip:hover { border-color: var(--purple-100); background: var(--purple-50); }
+    .rel-chip.selected { border-color: var(--purple-500); background: var(--purple-50); color: var(--purple-700); }
+    .rel-chip-icon { font-size: 1.2rem; }
+
+    /* ── Privacy Items ── */
+    .privacy-list { display: flex; flex-direction: column; gap: 12px; width: 100%; margin: 16px 0; }
+    .privacy-item { display: flex; align-items: flex-start; gap: 12px; background: rgba(255,255,255,0.65); border-radius: 14px; padding: 13px 15px; }
+    .privacy-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+    .privacy-text { font-size: 0.87rem; color: var(--gray-700); line-height: 1.45; font-weight: 500; }
+    .privacy-text span { display: block; font-weight: 400; color: var(--gray-500); font-size: 0.8rem; margin-top: 1px; }
+
+    /* ── Loading bar ── */
+    .loading-wrap { width: 100%; margin: 32px 0 8px; }
+    .loading-track { width: 100%; height: 8px; background: rgba(123,97,255,0.15); border-radius: 50px; overflow: hidden; }
+    .loading-fill { height: 100%; background: var(--purple-500); border-radius: 50px; width: 0%; transition: none; }
+    .loading-fill.animate { animation: fillBar 3s ease-in-out forwards; }
+    .loading-label { font-family: 'Inter', sans-serif; font-size: 0.83rem; color: var(--purple-700); text-align: center; margin-top: 10px; opacity: 0; transition: opacity 0.5s; }
+    .loading-label.visible { opacity: 1; }
+
+    /* ── Handoff badge ── */
+    .handoff-badge {
+      background: var(--orange-50); border: 2px solid rgba(249,115,22,0.2);
+      border-radius: 50px; padding: 8px 18px;
+      font-family: 'Fredoka', sans-serif; font-size: 0.88rem;
+      font-weight: 600; color: var(--orange-500); margin-bottom: 8px;
+    }
+
+    /* ── Mascot color circles ── */
+    .color-circles { display: flex; gap: 14px; margin: 16px 0; justify-content: center; }
+    .color-circle {
+      width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
+      border: 3px solid transparent; transition: all 0.2s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    .color-circle:hover { transform: scale(1.12); }
+    .color-circle.selected { border-color: var(--dark); transform: scale(1.18); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+    /* ── Luna glow ── */
+    .luna-glow-wrap {
+      position: relative; display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .luna-glow {
+      position: absolute; border-radius: 50%;
+      filter: blur(28px); opacity: 0.5;
+      transition: background 0.4s;
+      pointer-events: none;
+    }
+    .luna-glow-wrap svg { position: relative; z-index: 1; }
+
+    /* ── Care cards ── */
+    .care-cards { display: flex; flex-direction: column; gap: 10px; width: 100%; margin: 12px 0; }
+    .care-card {
+      background: var(--white); border-radius: 16px; overflow: hidden;
+      display: flex; align-items: stretch;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .care-card:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+    .care-card:active { transform: scale(0.98); }
+    .care-card-bar { width: 5px; flex-shrink: 0; }
+    .care-card-inner { flex: 1; padding: 14px 14px; display: flex; align-items: center; gap: 12px; }
+    .care-card-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .care-card-text { flex: 1; }
+    .care-card-title { font-family: 'Fredoka', sans-serif; font-size: 1rem; font-weight: 600; color: var(--dark); }
+    .care-card-sub { font-size: 0.78rem; color: var(--gray-500); margin-top: 2px; }
+    .care-chip {
+      background: var(--orange-50); color: var(--orange-500);
+      border-radius: 50px; padding: 4px 10px;
+      font-size: 0.72rem; font-weight: 600; font-family: 'Inter', sans-serif;
+      white-space: nowrap; flex-shrink: 0;
+    }
+
+    /* ── Scenario card ── */
+    .scenario-card {
+      background: var(--white); border-radius: 20px; padding: 22px 20px;
+      width: 100%; box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      text-align: center; margin: 8px 0 12px;
+    }
+    .scenario-text { font-family: 'Fredoka', sans-serif; font-size: 1.15rem; font-weight: 600; color: var(--dark); line-height: 1.35; margin-bottom: 16px; }
+    .choice-btns { display: flex; flex-direction: column; gap: 10px; }
+    .choice-btn {
+      width: 100%; padding: 14px 20px; border: 2px solid var(--gray-200); border-radius: 14px;
+      background: var(--white); font-family: 'Fredoka', sans-serif; font-size: 0.95rem;
+      font-weight: 500; color: var(--gray-700); cursor: pointer; text-align: left;
+      transition: all 0.18s; display: flex; align-items: center; gap: 10px;
+    }
+    .choice-btn:hover { border-color: var(--purple-300); background: var(--purple-50); color: var(--purple-700); }
+    .choice-btn.selected { border-color: var(--purple-500); background: var(--purple-50); color: var(--purple-700); }
+    .choice-btn-icon { font-size: 1.2rem; }
+
+    /* ── Emotion grid ── */
+    .emotion-grid { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 16px 0; width: 100%; }
+    .emotion-circle {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      cursor: pointer; transition: transform 0.15s;
+      padding: 8px 10px; border-radius: 16px; border: 2px solid transparent;
+      background: transparent;
+    }
+    .emotion-circle:hover { transform: scale(1.08); }
+    .emotion-circle.selected { border-color: var(--dark); background: rgba(30,17,69,0.04); }
+    .emotion-dot { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .emotion-label { font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 500; color: var(--gray-500); }
+
+    /* ── Reaction screen ── */
+    .reaction-msg {
+      background: var(--purple-50); border-radius: 20px; padding: 18px 20px;
+      width: 100%; text-align: center; margin: 8px 0 16px;
+    }
+    .reaction-msg-title { font-family: 'Fredoka', sans-serif; font-size: 1rem; font-weight: 600; color: var(--purple-700); margin-bottom: 6px; }
+    .reaction-msg-text { font-size: 0.88rem; color: var(--gray-500); line-height: 1.5; }
+
+    /* ── Breathe screen ── */
+    .breathe-ring-wrap { position: relative; display: flex; align-items: center; justify-content: center; margin: 16px 0; }
+    .breathe-ring {
+      width: 160px; height: 160px; border-radius: 50%;
+      background: radial-gradient(circle at center, rgba(110,231,183,0.3) 0%, rgba(52,211,153,0.15) 60%, transparent 100%);
+      border: 3px solid var(--mint-300);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 40px rgba(52,211,153,0.25);
+      animation: breathe 3.5s ease-in-out infinite;
+      transition: background 0.3s;
+    }
+    .breathe-inner { width: 90px; height: 90px; border-radius: 50%; background: var(--mint-500); opacity: 0.7; }
+    .breathe-label { font-family: 'Fredoka', sans-serif; font-size: 1.3rem; font-weight: 600; color: var(--mint-700); text-align: center; margin-top: 10px; }
+    .breathe-phase { font-size: 0.85rem; color: var(--gray-500); text-align: center; margin-top: 4px; }
+    .breathe-counter { display: flex; gap: 8px; justify-content: center; margin: 12px 0; }
+    .breathe-dot-item { width: 10px; height: 10px; border-radius: 50%; background: var(--gray-200); transition: background 0.4s; }
+    .breathe-dot-item.done { background: var(--mint-500); }
+    .breathe-dot-item.active { background: var(--mint-700); transform: scale(1.3); }
+
+    /* ── Sticker star ── */
+    .sticker-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 8px 0 16px; }
+    .star-badge {
+      width: 100px; height: 100px; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      border-radius: 50%; box-shadow: 0 8px 32px rgba(255,165,0,0.45);
+      font-size: 3rem; line-height: 1;
+      animation: starPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .star-rays {
+      position: absolute; width: 130px; height: 130px; border-radius: 50%;
+      background: transparent;
+      box-shadow: 0 0 0 8px rgba(255,215,0,0.15), 0 0 0 18px rgba(255,215,0,0.08);
+      animation: starRays 1.5s ease-out both;
+    }
+
+    /* ── Summary screen ── */
+    .summary-header { width: 100%; padding: 20px 20px 0; }
+    .summary-back-link { font-family: 'Inter', sans-serif; font-size: 0.88rem; color: var(--purple-500); cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; }
+    .summary-back-link:hover { text-decoration: underline; }
+    .summary-title { font-family: 'Fredoka', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--dark); margin-top: 12px; }
+    .summary-child { font-family: 'Inter', sans-serif; font-size: 0.88rem; color: var(--gray-500); font-weight: 500; margin-top: 2px; }
+    .week-nav { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 12px 0; }
+    .week-nav-arrow { width: 32px; height: 32px; border-radius: 50%; background: var(--gray-100); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: var(--gray-700); transition: all 0.15s; }
+    .week-nav-arrow:hover:not(:disabled) { background: var(--purple-50); color: var(--purple-700); }
+    .week-nav-arrow:disabled { opacity: 0.35; cursor: not-allowed; }
+    .week-label { font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 600; color: var(--gray-700); }
+    .active-days { font-family: 'Inter', sans-serif; font-size: 0.88rem; color: var(--gray-500); text-align: center; margin-bottom: 12px; }
+    .active-days strong { color: var(--purple-700); }
+    .summary-insight-card {
+      width: 100%; border-radius: 14px; padding: 14px 16px;
+      background: var(--white); border-left: 4px solid var(--red-500);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 10px;
+    }
+    .summary-insight-card.mint { border-left-color: var(--mint-500); }
+    .insight-tag { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--red-500); margin-bottom: 4px; font-family: 'Inter', sans-serif; }
+    .insight-tag.mint { color: var(--mint-700); }
+    .insight-text { font-size: 0.88rem; color: var(--gray-700); line-height: 1.45; font-weight: 400; font-family: 'Inter', sans-serif; }
+    .section-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-300); margin: 16px 0 10px; width: 100%; font-family: 'Inter', sans-serif; }
+    .summary-cards-list { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+    .summary-card {
+      background: var(--white); border-radius: 16px; overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); cursor: pointer;
+    }
+    .summary-card-header { display: flex; align-items: center; padding: 14px 16px; gap: 12px; }
+    .summary-card-badge { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-size: 0.75rem; font-weight: 700; color: var(--white); flex-shrink: 0; }
+    .summary-card-info { flex: 1; }
+    .summary-card-title { font-family: 'Fredoka', sans-serif; font-size: 0.97rem; font-weight: 600; color: var(--dark); }
+    .summary-card-sub { font-size: 0.78rem; color: var(--gray-500); margin-top: 2px; }
+    .summary-card-chevron { font-size: 0.85rem; color: var(--gray-300); transition: transform 0.25s; }
+    .summary-card.open .summary-card-chevron { transform: rotate(180deg); }
+    .summary-card-body { display: none; padding: 0 16px 14px; font-size: 0.83rem; color: var(--gray-500); line-height: 1.55; border-top: 1px solid var(--gray-100); padding-top: 12px; }
+    .summary-card.open .summary-card-body { display: block; }
+    .mood-timeline { display: flex; gap: 8px; margin-top: 12px; justify-content: center; }
+    .mood-day { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .mood-day-dot { width: 28px; height: 28px; border-radius: 50%; }
+    .mood-day-label { font-size: 0.65rem; color: var(--gray-400); font-family: 'Inter', sans-serif; }
+    .summary-logout { text-align: center; margin-top: 20px; padding-bottom: 20px; }
+    .summary-logout a { font-size: 0.83rem; color: var(--gray-300); cursor: pointer; font-family: 'Inter', sans-serif; }
+    .summary-logout a:hover { color: var(--gray-500); text-decoration: underline; }
+
+    /* ── Done today ── */
+    .done-today-parent-link { font-size: 0.88rem; color: var(--purple-500); text-align: center; margin-top: 12px; cursor: pointer; font-weight: 500; font-family: 'Inter', sans-serif; display: block; }
+    .done-today-parent-link:hover { text-decoration: underline; }
+
+    /* ── Thanks state on care screen ── */
+    .care-thanks {
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      gap: 12px; padding: 20px; text-align: center;
+    }
+    .care-thanks.visible { display: flex; }
+    .care-main { display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+    /* ── Animations ── */
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fillBar { 0% { width: 0%; } 60% { width: 75%; } 100% { width: 100%; } }
+    @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.22); } }
+    @keyframes starPop { 0% { opacity: 0; transform: scale(0.2) rotate(-10deg); } 70% { transform: scale(1.15) rotate(4deg); } 100% { opacity: 1; transform: scale(1) rotate(0deg); } }
+    @keyframes starRays { 0% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; } 100% { opacity: 0; transform: scale(1.4); } }
+    @keyframes lunaFloat { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+
+    .screen.active .screen-content > * {
+      animation: fadeInUp 0.45s ease both;
+    }
+    .screen.active .screen-content > *:nth-child(1) { animation-delay: 0.04s; }
+    .screen.active .screen-content > *:nth-child(2) { animation-delay: 0.1s; }
+    .screen.active .screen-content > *:nth-child(3) { animation-delay: 0.16s; }
+    .screen.active .screen-content > *:nth-child(4) { animation-delay: 0.22s; }
+    .screen.active .screen-content > *:nth-child(5) { animation-delay: 0.27s; }
+    .screen.active .screen-content > *:nth-child(6) { animation-delay: 0.31s; }
+    .screen.active .screen-content > *:nth-child(7) { animation-delay: 0.35s; }
+
+    /* ── Dev Bar ── */
+    .dev-bar {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      background: rgba(30,17,69,0.9); backdrop-filter: blur(10px);
+      border-radius: 12px 12px 0 0; padding: 7px 12px 8px;
+      display: flex; gap: 5px; align-items: center; z-index: 999;
+      max-width: 375px; width: 100%; flex-wrap: wrap;
+    }
+    .dev-section { display: flex; align-items: center; gap: 4px; }
+    .dev-bar-label { font-size: 0.6rem; color: rgba(255,255,255,0.35); font-family: 'Inter', monospace; white-space: nowrap; letter-spacing: 0.05em; }
+    .dev-sep { width: 1px; height: 14px; background: rgba(255,255,255,0.15); margin: 0 3px; flex-shrink: 0; }
+    .dev-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,0.22); cursor: pointer;
+      transition: background 0.2s, transform 0.15s; flex-shrink: 0;
+    }
+    .dev-dot:hover { background: rgba(255,255,255,0.55); transform: scale(1.3); }
+    .dev-dot.active { background: var(--purple-500); }
+  </style>
+</head>
+<body>
+
+<div class="phone-frame" id="phoneFrame">
+  <!-- Progress Bar -->
+  <div class="progress-bar-wrap" id="progressWrap">
+    <div class="progress-bar-fill" id="progressFill"></div>
+  </div>
+
+  <!-- Back Button -->
+  <button class="back-btn" id="backBtn" onclick="goBack()" aria-label="Volver">←</button>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s0 — Login                             -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-white active" id="screen-s0">
+    <div class="screen-content" style="justify-content: center; padding-top: 52px;">
+      <div id="s0-luna" style="animation: lunaFloat 3s ease-in-out infinite; margin-bottom: 20px;"></div>
+      <h1 class="heading" style="font-size: 2rem; margin-bottom: 4px;">Hachiko Kids</h1>
+      <p class="subtext" style="margin-bottom: 0;">Tu mascota te entiende</p>
+      <div class="auth-input-group">
+        <div>
+          <label class="auth-input-label">Correo electrónico</label>
+          <input type="email" class="auth-input" placeholder="hola@ejemplo.com" autocomplete="off">
+        </div>
+        <div>
+          <label class="auth-input-label">Contraseña</label>
+          <input type="password" class="auth-input" placeholder="••••••••">
+        </div>
+      </div>
+      <div class="btn-wrap" style="padding-top: 20px;">
+        <button class="btn btn-primary" onclick="goToScreen('s2')">Entrar</button>
+        <p class="auth-link" onclick="goToScreen('s1')">¿Sin cuenta? Crear cuenta →</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s1 — Signup                            -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-white" id="screen-s1">
+    <div class="screen-content" style="justify-content: center; padding-top: 52px;">
+      <div id="s1-luna" style="animation: lunaFloat 3s ease-in-out infinite; margin-bottom: 20px;"></div>
+      <h1 class="heading" style="margin-bottom: 4px;">Crear cuenta</h1>
+      <p class="subtext">Únete a las familias que ya usan Hachiko</p>
+      <div class="auth-input-group">
+        <div>
+          <label class="auth-input-label">Correo electrónico</label>
+          <input type="email" class="auth-input" placeholder="hola@ejemplo.com" autocomplete="off">
+        </div>
+        <div>
+          <label class="auth-input-label">Contraseña</label>
+          <input type="password" class="auth-input" placeholder="Mínimo 8 caracteres">
+        </div>
+      </div>
+      <div class="btn-wrap" style="padding-top: 20px;">
+        <button class="btn btn-primary" onclick="goToScreen('s2')">Crear cuenta</button>
+        <p class="auth-link" onclick="goToScreen('s0')">← Ya tengo cuenta</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s2 — Welcome                           -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-white" id="screen-s2">
+    <div class="screen-content centered">
+      <div id="s2-luna" style="animation: lunaFloat 3s ease-in-out infinite; margin-bottom: 24px;"></div>
+      <h1 class="heading">Entiende a tu hijo<br>a través de Luna</h1>
+      <p class="subtext" style="max-width: 300px; margin-bottom: 32px;">
+        Tu hijo cuida una mascota virtual.<br>
+        Tú recibes patrones de su comportamiento<br>y tips concretos cada semana.
+      </p>
+      <div class="btn-wrap" style="padding-top: 0;">
+        <button class="btn btn-primary" onclick="goToScreen('s3')">Siguiente</button>
+        <p class="footnote" style="margin-top: 12px;">Sin diagnósticos. Sin culpa. Solo claridad.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s3 — Value Prop                        -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-white" id="screen-s3">
+    <div class="screen-content">
+      <h1 class="heading" style="margin-top: 16px;">Lo que vas<br>a descubrir</h1>
+      <div class="value-bubbles" style="margin-top: 12px;">
+        <div class="value-bubble">
+          <div class="bubble-icon">📅</div>
+          <div class="bubble-text">
+            <div class="bubble-title">Resúmenes semanales</div>
+            <div class="bubble-desc">Cada lunes recibes qué pasó con tu hijo esta semana: qué patrones se repiten y cómo hablar sobre eso.</div>
+          </div>
+        </div>
+        <div class="value-bubble">
+          <div class="bubble-icon">📊</div>
+          <div class="bubble-text">
+            <div class="bubble-title">Patrones de comportamiento</div>
+            <div class="bubble-desc">Visualiza cómo reacciona ante distintas situaciones: instrucciones, conflictos, emociones intensas.</div>
+          </div>
+        </div>
+        <div class="value-bubble">
+          <div class="bubble-icon">🎯</div>
+          <div class="bubble-text">
+            <div class="bubble-title">Tips accionables</div>
+            <div class="bubble-desc">No solo "qué pasa" sino "qué puedes hacer esta semana" — concreto y sin culpa.</div>
+          </div>
+        </div>
+      </div>
+      <div class="btn-wrap">
+        <button class="btn btn-primary" onclick="goToScreen('s4')">Empezar configuración</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s4 — Child Name                        -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-cream" id="screen-s4">
+    <div class="screen-content">
+      <div id="s4-luna" style="animation: lunaFloat 3s ease-in-out infinite; margin-bottom: 20px; margin-top: 8px;"></div>
+      <h1 class="heading-sm">¿Cómo se llama<br>tu hijo/a?</h1>
+      <p class="subtext">Para que Luna lo llame por su nombre.</p>
+      <div class="input-wrap">
+        <input type="text" class="text-input" id="nameInput" placeholder="Ej: Sofía, Mateo..."
+          maxlength="30" autocomplete="off" autocorrect="off" spellcheck="false"
+          oninput="updateName()">
+      </div>
+      <div class="info-block">
+        <div class="info-block-icon">💡</div>
+        <div class="info-block-text">Para personalizar la experiencia y que Luna lo llame por su nombre en cada sesión.</div>
+      </div>
+      <div class="btn-wrap">
+        <button class="btn btn-primary" id="btnName" onclick="goToScreen('s5')" disabled>Siguiente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s5 — Child Age                         -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-cream" id="screen-s5">
+    <div class="screen-content">
+      <h1 class="heading-sm">¿Cuántos años tiene<br><span data-name style="color: var(--purple-500);">tu hijo/a</span>?</h1>
+      <p class="subtext">Adaptamos los escenarios a su nivel de desarrollo.</p>
+      <div class="age-grid">
+        <div class="age-chip" onclick="selectAge(4)" id="age-4"><div class="age-chip-label"><span class="age-chip-num">4</span><span class="age-chip-word">años</span></div></div>
+        <div class="age-chip" onclick="selectAge(5)" id="age-5"><div class="age-chip-label"><span class="age-chip-num">5</span><span class="age-chip-word">años</span></div></div>
+        <div class="age-chip" onclick="selectAge(6)" id="age-6"><div class="age-chip-label"><span class="age-chip-num">6</span><span class="age-chip-word">años</span></div></div>
+        <div class="age-chip selected" onclick="selectAge(7)" id="age-7"><div class="age-chip-label"><span class="age-chip-num">7</span><span class="age-chip-word">años</span></div></div>
+        <div class="age-chip" onclick="selectAge(8)" id="age-8"><div class="age-chip-label"><span class="age-chip-num">8</span><span class="age-chip-word">años</span></div></div>
+        <div class="age-chip" onclick="selectAge(9)" id="age-9"><div class="age-chip-label"><span class="age-chip-num">9</span><span class="age-chip-word">años</span></div></div>
+        <div class="age-chip" onclick="selectAge(10)" id="age-10"><div class="age-chip-label"><span class="age-chip-num">10</span><span class="age-chip-word">años</span></div></div>
+        <div class="age-chip" onclick="selectAge(11)" id="age-11"><div class="age-chip-label"><span class="age-chip-num">11</span><span class="age-chip-word">años</span></div></div>
+        <div class="age-chip" onclick="selectAge(12)" id="age-12"><div class="age-chip-label"><span class="age-chip-num">12</span><span class="age-chip-word">años</span></div></div>
+      </div>
+      <div class="info-block">
+        <div class="info-block-icon">💡</div>
+        <div class="info-block-text">Adaptamos los escenarios y el lenguaje al nivel de desarrollo de <strong data-name>tu hijo/a</strong>.</div>
+      </div>
+      <div class="btn-wrap">
+        <button class="btn btn-primary" onclick="goToScreen('s6')">Siguiente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s6 — Relationship                      -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-cream" id="screen-s6">
+    <div class="screen-content">
+      <h1 class="heading-sm">¿Cuál es tu relación<br>con <span data-name style="color: var(--purple-500);">tu hijo/a</span>?</h1>
+      <p class="subtext">Para personalizar los tips que recibes.</p>
+      <div class="rel-chips">
+        <div class="rel-chip" onclick="selectRelationship('mama')" id="rel-mama"><span class="rel-chip-icon">👩</span> Mamá</div>
+        <div class="rel-chip" onclick="selectRelationship('papa')" id="rel-papa"><span class="rel-chip-icon">👨</span> Papá</div>
+        <div class="rel-chip" onclick="selectRelationship('abuelo')" id="rel-abuelo"><span class="rel-chip-icon">👴</span> Abuelo·a</div>
+        <div class="rel-chip" onclick="selectRelationship('tutor')" id="rel-tutor"><span class="rel-chip-icon">🧑</span> Tutor·a</div>
+        <div class="rel-chip" onclick="selectRelationship('otro')" id="rel-otro"><span class="rel-chip-icon">👥</span> Otro</div>
+      </div>
+      <div class="info-block">
+        <div class="info-block-icon">💡</div>
+        <div class="info-block-text">Para personalizar los tips y recomendaciones que recibas cada semana sobre <span data-name>tu hijo/a</span>.</div>
+      </div>
+      <div class="btn-wrap">
+        <button class="btn btn-primary" id="btnRel" onclick="goToScreen('s7')" disabled>Siguiente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s7 — Privacy                           -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-blue" id="screen-s7">
+    <div class="screen-content">
+      <div style="font-size: 2.8rem; margin-bottom: 8px; margin-top: 8px;">🔒</div>
+      <h1 class="heading-sm">Los datos de<br><span data-name style="color: var(--purple-500);">tu hijo/a</span> están seguros</h1>
+      <p class="subtext" style="margin-bottom: 0;">Antes de continuar, queremos ser transparentes.</p>
+      <div class="privacy-list">
+        <div class="privacy-item"><div class="privacy-icon">🚫</div><div class="privacy-text">Nunca vendemos datos de niños<span>La información de <span data-name>tu hijo/a</span> no se vende ni se comparte con terceros.</span></div></div>
+        <div class="privacy-item"><div class="privacy-icon">🏷️</div><div class="privacy-text">Sin etiquetas clínicas<span>Hachiko identifica patrones conductuales, no hace diagnósticos.</span></div></div>
+        <div class="privacy-item"><div class="privacy-icon">👁️</div><div class="privacy-text">Solo tú ves la información<span>Los datos de <span data-name>tu hijo/a</span> no se comparten con colegios sin tu permiso.</span></div></div>
+        <div class="privacy-item"><div class="privacy-icon">🗑️</div><div class="privacy-text">Puedes eliminar todo<span>En cualquier momento puedes borrar la cuenta y todos los datos asociados.</span></div></div>
+      </div>
+      <div class="btn-wrap" style="padding-top: 0;">
+        <button class="btn btn-mint" onclick="goToScreen('s8')">Acepto y continúo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s8 — Loading                           -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-grad" id="screen-s8">
+    <div class="screen-content" style="justify-content: center; align-items: center;">
+      <div id="s8-luna" style="animation: lunaFloat 3s ease-in-out infinite; margin-bottom: 16px;"></div>
+      <h1 class="heading" style="color: var(--dark);">Preparando el<br>mundo de Luna…</h1>
+      <div class="loading-wrap">
+        <div class="loading-track">
+          <div class="loading-fill" id="loadingFill"></div>
+        </div>
+        <p class="loading-label" id="loadingLabel">
+          Personalizando escenarios para <strong data-name>tu hijo/a</strong>…
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s9 — Handoff                           -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-grad" id="screen-s9">
+    <div class="screen-content" style="justify-content: center; align-items: center; text-align: center;">
+      <div class="handoff-badge">¡Todo listo!</div>
+      <div id="s9-luna" style="animation: lunaFloat 3s ease-in-out infinite; margin: 12px 0;"></div>
+      <h1 class="heading" style="color: var(--dark); font-size: 1.9rem;">¡Pásale el teléfono<br>a <span data-name style="color: var(--purple-700);">tu hijo/a</span>!</h1>
+      <p class="subtext" style="margin-top: 8px; font-size: 0.93rem;">
+        Es hora de que <strong data-name>tu hijo/a</strong> conozca<br>a su nueva amiga Luna
+      </p>
+      <div class="btn-wrap" style="padding-top: 24px;">
+        <button class="btn btn-accent" onclick="goToScreen('s10')">¡Empezar!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s10 — Select Mascot                    -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-cream" id="screen-s10">
+    <div class="screen-content" style="padding-top: 52px;">
+      <h1 class="heading-sm" style="margin-bottom: 4px;">Conoce a Luna</h1>
+      <p class="subtext" style="margin-bottom: 12px;">Personaliza a tu nueva compañera</p>
+      <div class="luna-glow-wrap">
+        <div class="luna-glow" id="lunaGlow" style="width: 180px; height: 180px; background: #D4CCFF;"></div>
+        <div id="s10-luna" style="animation: lunaFloat 3s ease-in-out infinite;"></div>
+      </div>
+      <p class="heading-xs" style="margin-bottom: 6px; color: var(--gray-500); font-family: 'Inter'; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">Elige el color de Luna</p>
+      <div class="color-circles">
+        <div class="color-circle selected" id="cc-purple" style="background: #7B61FF;" onclick="selectMascotColor('purple')" title="Morado"></div>
+        <div class="color-circle" id="cc-blue" style="background: #60A5FA;" onclick="selectMascotColor('blue')" title="Azul"></div>
+        <div class="color-circle" id="cc-green" style="background: #34D399;" onclick="selectMascotColor('green')" title="Verde"></div>
+        <div class="color-circle" id="cc-pink" style="background: #F472B6;" onclick="selectMascotColor('pink')" title="Rosa"></div>
+        <div class="color-circle" id="cc-orange" style="background: #F97316;" onclick="selectMascotColor('orange')" title="Naranja"></div>
+      </div>
+      <p class="heading-xs" style="margin-top: 14px; margin-bottom: 6px; text-align: left; width: 100%; font-size: 0.85rem; color: var(--gray-700);">¿Cómo quieres llamarla?</p>
+      <div class="input-wrap" style="margin: 0;">
+        <input type="text" class="text-input" id="mascotInput" placeholder="Ej: Luna, Mili, Nube..."
+          value="Mili" maxlength="20" oninput="updateMascotName()">
+      </div>
+      <div class="btn-wrap" style="padding-top: 16px;">
+        <button class="btn btn-primary" onclick="goToScreen('s11')">¡Comenzar!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s11 — Mascot Care                      -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-gray" id="screen-s11">
+    <div class="screen-content" style="padding-top: 48px;">
+      <!-- Main care view -->
+      <div class="care-main" id="careMain">
+        <div id="s11-luna" style="animation: lunaFloat 3s ease-in-out infinite; margin-bottom: 8px;"></div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <div id="s11-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--orange-500);"></div>
+          <span style="font-family: 'Fredoka'; font-size: 1rem; font-weight: 600; color: var(--gray-700);"><span data-mascot>Mili</span> tiene hambre</span>
+        </div>
+        <div class="care-cards" id="careCards">
+          <div class="care-card" onclick="handleCareAction('feed')">
+            <div class="care-card-bar" style="background: var(--orange-500);"></div>
+            <div class="care-card-inner">
+              <div class="care-card-icon">🍎</div>
+              <div class="care-card-text">
+                <div class="care-card-title">Darle de comer</div>
+                <div class="care-card-sub"><span data-mascot>Mili</span> tiene mucha hambre hoy</div>
+              </div>
+              <div class="care-chip">Lo necesita</div>
+            </div>
+          </div>
+          <div class="care-card" onclick="handleCareAction('wash')">
+            <div class="care-card-bar" style="background: var(--mint-500);"></div>
+            <div class="care-card-inner">
+              <div class="care-card-icon">🛁</div>
+              <div class="care-card-text">
+                <div class="care-card-title">Darle un baño</div>
+                <div class="care-card-sub">¡El pelo está muy enredado!</div>
+              </div>
+            </div>
+          </div>
+          <div class="care-card" onclick="handleCareAction('play')">
+            <div class="care-card-bar" style="background: var(--purple-500);"></div>
+            <div class="care-card-inner">
+              <div class="care-card-icon">🎾</div>
+              <div class="care-card-text">
+                <div class="care-card-title">Jugar con <span data-mascot>Mili</span></div>
+                <div class="care-card-sub">Quiere correr y saltar</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-ghost" onclick="goToScreen('s12')" style="margin-top: 8px; opacity: 0.6;">Saltar</button>
+      </div>
+      <!-- Thanks state -->
+      <div class="care-thanks" id="careThanks">
+        <div id="s11-luna-happy" style="animation: lunaFloat 3s ease-in-out infinite;"></div>
+        <h2 class="heading-sm" style="margin-top: 12px;">¡Gracias por cuidarla!</h2>
+        <p class="subtext"><span data-mascot>Mili</span> está muy feliz</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s12 — Scenario                         -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-gray" id="screen-s12">
+    <div class="screen-content" style="padding-top: 44px; align-items: center;">
+      <div id="s12-luna" style="animation: lunaFloat 3s ease-in-out infinite; margin-bottom: 12px;"></div>
+      <div class="scenario-card">
+        <p class="scenario-text">
+          <span data-mascot>Mili</span> necesita ordenar sus juguetes.<br>¿La ayudas?
+        </p>
+        <div class="choice-btns">
+          <button class="choice-btn" onclick="handleChoice('yes', '¡Sí, vamos!')">
+            <span class="choice-btn-icon">✨</span> ¡Sí, vamos!
+          </button>
+          <button class="choice-btn" onclick="handleChoice('no', 'Ahora no')">
+            <span class="choice-btn-icon">😐</span> Ahora no
+          </button>
+          <button class="choice-btn" onclick="handleChoice('later', 'Un ratito más')">
+            <span class="choice-btn-icon">⏱️</span> Un ratito más
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s13 — Emotion                          -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-gray" id="screen-s13">
+    <div class="screen-content" style="padding-top: 44px; align-items: center;">
+      <div id="s13-luna" style="animation: lunaFloat 3s ease-in-out infinite; margin-bottom: 12px;"></div>
+      <h2 class="heading-sm">¿Cómo te sientes tú ahora?</h2>
+      <div class="emotion-grid">
+        <div class="emotion-circle" onclick="selectEmotion('happy')" id="emo-happy">
+          <div class="emotion-dot" style="background: #D1FAE5;">
+            <span style="font-size: 1.6rem;">😊</span>
+          </div>
+          <span class="emotion-label">Feliz</span>
+        </div>
+        <div class="emotion-circle" onclick="selectEmotion('neutral')" id="emo-neutral">
+          <div class="emotion-dot" style="background: var(--gray-100);">
+            <span style="font-size: 1.6rem;">😐</span>
+          </div>
+          <span class="emotion-label">Normal</span>
+        </div>
+        <div class="emotion-circle" onclick="selectEmotion('sad')" id="emo-sad">
+          <div class="emotion-dot" style="background: #DBEAFE;">
+            <span style="font-size: 1.6rem;">😢</span>
+          </div>
+          <span class="emotion-label">Triste</span>
+        </div>
+        <div class="emotion-circle" onclick="selectEmotion('angry')" id="emo-angry">
+          <div class="emotion-dot" style="background: #FEE2E2;">
+            <span style="font-size: 1.6rem;">😠</span>
+          </div>
+          <span class="emotion-label">Enojado</span>
+        </div>
+        <div class="emotion-circle" onclick="selectEmotion('scared')" id="emo-scared">
+          <div class="emotion-dot" style="background: var(--orange-50);">
+            <span style="font-size: 1.6rem;">😨</span>
+          </div>
+          <span class="emotion-label">Asustado</span>
+        </div>
+      </div>
+      <div class="btn-wrap">
+        <button class="btn btn-primary" id="btnEmotion" onclick="handleEmotion()" disabled>Siguiente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s14 — Reaction                         -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-gray" id="screen-s14">
+    <div class="screen-content" style="padding-top: 44px; align-items: center;">
+      <div id="s14-luna" style="animation: lunaFloat 3s ease-in-out infinite; margin-bottom: 12px;"></div>
+      <div class="reaction-msg" id="reactionMsgBox">
+        <div class="reaction-msg-title" id="reactionTitle">¡Luna está muy contenta!</div>
+        <div class="reaction-msg-text" id="reactionText">Gracias por ayudarla. Cuando ayudamos a otros nos sentimos bien por dentro.</div>
+      </div>
+      <div class="btn-wrap">
+        <button class="btn btn-mint" onclick="startBreathe(); goToScreen('s15');">Respirar con <span data-mascot>Mili</span></button>
+        <button class="btn btn-ghost" onclick="goToScreen('s16')" style="margin-top: 8px;">Siguiente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s15 — Breathe                          -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-gray" id="screen-s15">
+    <div class="screen-content" style="padding-top: 44px; align-items: center;">
+      <h2 class="heading-sm" style="margin-bottom: 4px;">Respira con <span data-mascot>Mili</span></h2>
+      <p class="subtext" style="margin-bottom: 8px;">4 respiraciones juntos</p>
+      <div class="breathe-ring-wrap">
+        <div class="breathe-ring" id="breatheRing">
+          <div class="breathe-inner"></div>
+        </div>
+      </div>
+      <div class="breathe-label" id="breathePhaseLabel">Inhala…</div>
+      <div class="breathe-phase" id="breathePhaseDesc">Llena tu panza de aire</div>
+      <div class="breathe-counter" id="breatheCounter">
+        <div class="breathe-dot-item active" id="bd-0"></div>
+        <div class="breathe-dot-item" id="bd-1"></div>
+        <div class="breathe-dot-item" id="bd-2"></div>
+        <div class="breathe-dot-item" id="bd-3"></div>
+      </div>
+      <div id="s15-luna" style="animation: lunaFloat 3s ease-in-out infinite; margin: 8px 0;"></div>
+      <div class="btn-wrap">
+        <button class="btn btn-primary" onclick="goToScreen('s16')">Listo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s16 — Sticker                          -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-gray" id="screen-s16">
+    <div class="screen-content" style="padding-top: 48px; align-items: center; justify-content: center;">
+      <div class="sticker-wrap">
+        <div style="position: relative; display: flex; align-items: center; justify-content: center;">
+          <div class="star-rays"></div>
+          <div class="star-badge" id="starBadge">⭐</div>
+        </div>
+        <h1 class="heading" style="font-size: 2rem; margin-top: 16px; margin-bottom: 8px;">¡Ganaste tu estrella!</h1>
+        <p class="subtext">Hoy hiciste algo muy especial con <span data-mascot>Mili</span></p>
+      </div>
+      <div id="s16-luna" style="animation: lunaFloat 3s ease-in-out infinite; margin: 8px 0;"></div>
+      <div class="btn-wrap" style="padding-top: 16px;">
+        <button class="btn btn-primary" onclick="goToScreen('s17')">Volver con <span data-mascot>Mili</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s17 — Done Today                       -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-gray" id="screen-s17">
+    <div class="screen-content" style="padding-top: 40px; align-items: center; justify-content: center;">
+      <div id="s17-luna" style="animation: lunaFloat 3s ease-in-out infinite; margin-bottom: 16px;"></div>
+      <h1 class="heading" style="margin-bottom: 6px;">¡<span data-mascot>Mili</span> te espera mañana!</h1>
+      <p class="subtext" style="font-size: 1rem; margin-bottom: 24px;">Hoy ya jugaron juntos</p>
+      <div style="background: var(--white); border-radius: 16px; padding: 16px 20px; width: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-align: center; margin-bottom: 12px;">
+        <p style="font-family: 'Fredoka'; font-size: 0.88rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;">Racha actual</p>
+        <div style="display: flex; gap: 8px; justify-content: center;">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--purple-500); opacity: 0.3;"></div>
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--purple-500); opacity: 0.3;"></div>
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--purple-500); opacity: 0.5;"></div>
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--purple-500);"></div>
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--gray-100); border: 2px dashed var(--gray-200);"></div>
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--gray-100); border: 2px dashed var(--gray-200);"></div>
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--gray-100); border: 2px dashed var(--gray-200);"></div>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--gray-300); margin-top: 8px;">L  M  X  J  V  S  D</p>
+      </div>
+      <a class="done-today-parent-link" onclick="goToScreen('s18')">Resumen semanal (padres) →</a>
+      <a class="done-today-parent-link" onclick="goToScreen('s0')" style="color: var(--gray-300); margin-top: 4px;">Cerrar sesión</a>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- s18 — Weekly Summary                   -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="screen bg-white screen-scrollable" id="screen-s18">
+    <div style="padding: 20px 20px 100px;">
+      <div class="summary-header" style="padding: 0;">
+        <span class="summary-back-link" onclick="goToScreen('s17')">← Volver con <span data-mascot>Mili</span></span>
+        <div class="summary-title">Resumen semanal</div>
+        <div class="summary-child">Sofía · 7 años</div>
+      </div>
+
+      <div class="week-nav" style="margin-top: 16px;">
+        <button class="week-nav-arrow" id="weekPrev" onclick="navWeek(-1)">◀</button>
+        <span class="week-label" id="weekLabel">20/3 — 26/3</span>
+        <button class="week-nav-arrow" id="weekNext" onclick="navWeek(1)" disabled>▶</button>
+      </div>
+
+      <p class="active-days"><strong>Días activos: 4/7</strong></p>
+
+      <!-- Dato de la semana -->
+      <div class="summary-insight-card">
+        <div class="insight-tag">! Dato de la semana</div>
+        <div class="insight-text">Los lunes parecen más difíciles emocionalmente para Sofía.</div>
+      </div>
+
+      <!-- Qué puedes hacer -->
+      <div class="summary-insight-card mint">
+        <div class="insight-tag mint">✓ Qué puedes hacer</div>
+        <div class="insight-text">Intenta un ritual de despedida especial antes del colegio los lunes.</div>
+      </div>
+
+      <p class="section-label">Detalle por dimensión</p>
+
+      <div class="summary-cards-list">
+        <!-- IN -->
+        <div class="summary-card" id="sc-in" onclick="toggleSummaryCard('sc-in')">
+          <div class="summary-card-header">
+            <div class="summary-card-badge" style="background: var(--purple-500);">IN</div>
+            <div class="summary-card-info">
+              <div class="summary-card-title">Seguimiento de instrucciones</div>
+              <div class="summary-card-sub">Ayudó 3/5 veces esta semana</div>
+            </div>
+            <div class="summary-card-chevron">▾</div>
+          </div>
+          <div class="summary-card-body">
+            Sofía siguió instrucciones con facilidad cuando las actividades eran de su interés. Los momentos de mayor dificultad fueron en la tarde después del colegio.<br><br>
+            <strong>Tip:</strong> Usa frases cortas y directas. "Zapatos" en lugar de "¿Puedes ponerte los zapatos, por favor?".
+          </div>
+        </div>
+
+        <!-- SO -->
+        <div class="summary-card" id="sc-so" onclick="toggleSummaryCard('sc-so')">
+          <div class="summary-card-header">
+            <div class="summary-card-badge" style="background: var(--mint-500);">SO</div>
+            <div class="summary-card-info">
+              <div class="summary-card-title">Socialización</div>
+              <div class="summary-card-sub">Eligió jugar con amigos 4/5 días</div>
+            </div>
+            <div class="summary-card-chevron">▾</div>
+          </div>
+          <div class="summary-card-body">
+            Muy buena semana social. Sofía buscó activamente la compañía de otros y mostró iniciativa para proponer juegos en grupo.<br><br>
+            <strong>Tip:</strong> Refuerza sus habilidades sociales nombrando lo positivo que ves: "Qué bien que incluiste a tu hermano en el juego".
+          </div>
+        </div>
+
+        <!-- PR -->
+        <div class="summary-card" id="sc-pr" onclick="toggleSummaryCard('sc-pr')">
+          <div class="summary-card-header">
+            <div class="summary-card-badge" style="background: var(--mint-700);">PR</div>
+            <div class="summary-card-info">
+              <div class="summary-card-title">Conducta prosocial</div>
+              <div class="summary-card-sub">Compartió o colaboró 3/5 veces</div>
+            </div>
+            <div class="summary-card-chevron">▾</div>
+          </div>
+          <div class="summary-card-body">
+            Sofía mostró conductas de colaboración especialmente en juegos de roles. Todavía hay dificultades para compartir objetos que son suyos.<br><br>
+            <strong>Tip:</strong> Practica el turno con juegos de mesa. "Tú primero, luego yo" establece un patrón seguro.
+          </div>
+        </div>
+
+        <!-- RE -->
+        <div class="summary-card" id="sc-re" onclick="toggleSummaryCard('sc-re')">
+          <div class="summary-card-header">
+            <div class="summary-card-badge" style="background: var(--purple-300);">RE</div>
+            <div class="summary-card-info">
+              <div class="summary-card-title">Regulación emocional</div>
+              <div class="summary-card-sub">Eligió regularse 2/5 veces</div>
+            </div>
+            <div class="summary-card-chevron">▾</div>
+          </div>
+          <div class="summary-card-body">
+            Esta dimensión necesita más apoyo. Sofía tuvo dificultades para manejar la frustración, especialmente cuando las cosas no salieron como esperaba.<br><br>
+            <strong>Tip:</strong> Nombra las emociones antes de que escalen: "Veo que estás frustrada. Eso tiene sentido."
+          </div>
+        </div>
+
+        <!-- AN -->
+        <div class="summary-card" id="sc-an" onclick="toggleSummaryCard('sc-an')">
+          <div class="summary-card-header">
+            <div class="summary-card-badge" style="background: var(--orange-500);">AN</div>
+            <div class="summary-card-info">
+              <div class="summary-card-title">Ánimo general</div>
+              <div class="summary-card-sub">Ánimo estable esta semana</div>
+            </div>
+            <div class="summary-card-chevron">▾</div>
+          </div>
+          <div class="summary-card-body">
+            La semana en general fue positiva. El lunes empezó con ánimo bajo pero mejoró notablemente hacia el miércoles.
+            <div class="mood-timeline">
+              <div class="mood-day">
+                <div class="mood-day-dot" style="background: #FCA5A5;"></div>
+                <div class="mood-day-label">L</div>
+              </div>
+              <div class="mood-day">
+                <div class="mood-day-dot" style="background: #FCD34D;"></div>
+                <div class="mood-day-label">M</div>
+              </div>
+              <div class="mood-day">
+                <div class="mood-day-dot" style="background: var(--mint-300);"></div>
+                <div class="mood-day-label">X</div>
+              </div>
+              <div class="mood-day">
+                <div class="mood-day-dot" style="background: var(--mint-500);"></div>
+                <div class="mood-day-label">J</div>
+              </div>
+              <div class="mood-day">
+                <div class="mood-day-dot" style="background: var(--mint-300);"></div>
+                <div class="mood-day-label">V</div>
+              </div>
+            </div>
+            <br>
+            <strong>Tip:</strong> El patrón del lunes es consistente. Vale la pena explorar qué pasa el domingo por la tarde que anticipa el inicio de semana.
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-logout">
+        <a onclick="goToScreen('s0')">Cerrar sesión</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- Dev Bar                                         -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="dev-bar" id="devBar">
+  <div class="dev-section">
+    <span class="dev-bar-label">auth</span>
+    <div class="dev-dot active" id="dot-s0" onclick="goToScreen('s0')" title="Login (s0)"></div>
+    <div class="dev-dot" id="dot-s1" onclick="goToScreen('s1')" title="Signup (s1)"></div>
+  </div>
+  <div class="dev-sep"></div>
+  <div class="dev-section">
+    <span class="dev-bar-label">onboarding</span>
+    <div class="dev-dot" id="dot-s2" onclick="goToScreen('s2')" title="Welcome (s2)"></div>
+    <div class="dev-dot" id="dot-s3" onclick="goToScreen('s3')" title="Value Prop (s3)"></div>
+    <div class="dev-dot" id="dot-s4" onclick="goToScreen('s4')" title="Nombre (s4)"></div>
+    <div class="dev-dot" id="dot-s5" onclick="goToScreen('s5')" title="Edad (s5)"></div>
+    <div class="dev-dot" id="dot-s6" onclick="goToScreen('s6')" title="Relación (s6)"></div>
+    <div class="dev-dot" id="dot-s7" onclick="goToScreen('s7')" title="Privacidad (s7)"></div>
+    <div class="dev-dot" id="dot-s8" onclick="goToScreen('s8')" title="Loading (s8)"></div>
+    <div class="dev-dot" id="dot-s9" onclick="goToScreen('s9')" title="Handoff (s9)"></div>
+  </div>
+  <div class="dev-sep"></div>
+  <div class="dev-section">
+    <span class="dev-bar-label">mascota</span>
+    <div class="dev-dot" id="dot-s10" onclick="goToScreen('s10')" title="Select Mascot (s10)"></div>
+  </div>
+  <div class="dev-sep"></div>
+  <div class="dev-section">
+    <span class="dev-bar-label">checkin</span>
+    <div class="dev-dot" id="dot-s11" onclick="goToScreen('s11')" title="Mascot Care (s11)"></div>
+    <div class="dev-dot" id="dot-s12" onclick="goToScreen('s12')" title="Scenario (s12)"></div>
+    <div class="dev-dot" id="dot-s13" onclick="goToScreen('s13')" title="Emotion (s13)"></div>
+    <div class="dev-dot" id="dot-s14" onclick="goToScreen('s14')" title="Reaction (s14)"></div>
+    <div class="dev-dot" id="dot-s15" onclick="goToScreen('s15')" title="Breathe (s15)"></div>
+    <div class="dev-dot" id="dot-s16" onclick="goToScreen('s16')" title="Sticker (s16)"></div>
+    <div class="dev-dot" id="dot-s17" onclick="goToScreen('s17')" title="Done Today (s17)"></div>
+  </div>
+  <div class="dev-sep"></div>
+  <div class="dev-section">
+    <span class="dev-bar-label">resumen</span>
+    <div class="dev-dot" id="dot-s18" onclick="goToScreen('s18')" title="Weekly Summary (s18)"></div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════
+   LUNA CAT SVG
+════════════════════════════════════ */
+const LUNA_PALETTE = {
+  purple: { body: '#D4CCFF', ear: '#E8E4FF', accent: '#7B61FF', blush: '#C4B5FD', inner: '#EDE9FF' },
+  blue:   { body: '#BFDBFE', ear: '#DBEAFE', accent: '#3B82F6', blush: '#93C5FD', inner: '#EFF6FF' },
+  green:  { body: '#A7F3D0', ear: '#D1FAE5', accent: '#059669', blush: '#6EE7B7', inner: '#ECFDF5' },
+  pink:   { body: '#FBCFE8', ear: '#FCE7F3', accent: '#DB2777', blush: '#F9A8D4', inner: '#FDF2F8' },
+  orange: { body: '#FED7AA', ear: '#FFEDD5', accent: '#EA580C', blush: '#FDBA74', inner: '#FFF7ED' },
+};
+
+const GLOW_COLORS = {
+  purple: '#C4BCFF',
+  blue: '#93C5FD',
+  green: '#6EE7B7',
+  pink: '#F9A8D4',
+  orange: '#FDBA74',
+};
+
+function lunaHTML(mood, colorKey, size) {
+  const p = LUNA_PALETTE[colorKey] || LUNA_PALETTE.purple;
+  const s = size || 120;
+  const cx = s / 2;
+  const cy = s / 2 + s * 0.04;
+
+  // Body proportions
+  const bodyW = s * 0.52;
+  const bodyH = s * 0.44;
+  const bodyX = cx;
+  const bodyY = cy + s * 0.22;
+  const headR = s * 0.3;
+  const headCX = cx;
+  const headCY = cy + s * 0.02;
+
+  // Ears
+  const earW = s * 0.12;
+  const earH = s * 0.18;
+
+  // Eyes
+  let eyesSVG = '';
+  const eyeLX = headCX - headR * 0.36;
+  const eyeRX = headCX + headR * 0.36;
+  const eyeY = headCY - headR * 0.04;
+
+  if (mood === 'happy') {
+    // Closed curved eyes (upward arcs)
+    eyesSVG = `
+      <path d="M${eyeLX - s*0.055} ${eyeY} Q${eyeLX} ${eyeY - s*0.07} ${eyeLX + s*0.055} ${eyeY}" stroke="${p.accent}" stroke-width="${s*0.025}" fill="none" stroke-linecap="round"/>
+      <path d="M${eyeRX - s*0.055} ${eyeY} Q${eyeRX} ${eyeY - s*0.07} ${eyeRX + s*0.055} ${eyeY}" stroke="${p.accent}" stroke-width="${s*0.025}" fill="none" stroke-linecap="round"/>
+      <!-- blush -->
+      <ellipse cx="${eyeLX}" cy="${eyeY + s*0.055}" rx="${s*0.055}" ry="${s*0.03}" fill="${p.blush}" opacity="0.65"/>
+      <ellipse cx="${eyeRX}" cy="${eyeY + s*0.055}" rx="${s*0.055}" ry="${s*0.03}" fill="${p.blush}" opacity="0.65"/>
+    `;
+  } else if (mood === 'sad') {
+    eyesSVG = `
+      <ellipse cx="${eyeLX}" cy="${eyeY}" rx="${s*0.055}" ry="${s*0.065}" fill="${p.accent}"/>
+      <ellipse cx="${eyeLX}" cy="${eyeY}" rx="${s*0.03}" ry="${s*0.038}" fill="white" transform="translate(-${s*0.012},-${s*0.015})"/>
+      <ellipse cx="${eyeRX}" cy="${eyeY}" rx="${s*0.055}" ry="${s*0.065}" fill="${p.accent}"/>
+      <ellipse cx="${eyeRX}" cy="${eyeY}" rx="${s*0.03}" ry="${s*0.038}" fill="white" transform="translate(-${s*0.012},-${s*0.015})"/>
+      <!-- tear -->
+      <ellipse cx="${eyeLX - s*0.01}" cy="${eyeY + s*0.08}" rx="${s*0.015}" ry="${s*0.025}" fill="#93C5FD" opacity="0.8"/>
+      <!-- sad brows -->
+      <path d="M${eyeLX - s*0.05} ${eyeY - s*0.1} L${eyeLX + s*0.04} ${eyeY - s*0.075}" stroke="${p.accent}" stroke-width="${s*0.022}" stroke-linecap="round" fill="none"/>
+      <path d="M${eyeRX - s*0.04} ${eyeY - s*0.075} L${eyeRX + s*0.05} ${eyeY - s*0.1}" stroke="${p.accent}" stroke-width="${s*0.022}" stroke-linecap="round" fill="none"/>
+    `;
+  } else if (mood === 'angry') {
+    eyesSVG = `
+      <ellipse cx="${eyeLX}" cy="${eyeY}" rx="${s*0.055}" ry="${s*0.055}" fill="${p.accent}"/>
+      <ellipse cx="${eyeLX}" cy="${eyeY}" rx="${s*0.03}" ry="${s*0.03}" fill="white" transform="translate(-${s*0.01},-${s*0.01})"/>
+      <ellipse cx="${eyeRX}" cy="${eyeY}" rx="${s*0.055}" ry="${s*0.055}" fill="${p.accent}"/>
+      <ellipse cx="${eyeRX}" cy="${eyeY}" rx="${s*0.03}" ry="${s*0.03}" fill="white" transform="translate(-${s*0.01},-${s*0.01})"/>
+      <!-- V angry brows -->
+      <path d="M${eyeLX - s*0.055} ${eyeY - s*0.09} L${eyeLX + s*0.045} ${eyeY - s*0.12}" stroke="${p.accent}" stroke-width="${s*0.028}" stroke-linecap="round" fill="none"/>
+      <path d="M${eyeRX - s*0.045} ${eyeY - s*0.12} L${eyeRX + s*0.055} ${eyeY - s*0.09}" stroke="${p.accent}" stroke-width="${s*0.028}" stroke-linecap="round" fill="none"/>
+    `;
+  } else if (mood === 'scared') {
+    eyesSVG = `
+      <ellipse cx="${eyeLX}" cy="${eyeY}" rx="${s*0.07}" ry="${s*0.08}" fill="${p.accent}"/>
+      <ellipse cx="${eyeLX}" cy="${eyeY}" rx="${s*0.04}" ry="${s*0.045}" fill="white" transform="translate(-${s*0.015},-${s*0.015})"/>
+      <ellipse cx="${eyeRX}" cy="${eyeY}" rx="${s*0.07}" ry="${s*0.08}" fill="${p.accent}"/>
+      <ellipse cx="${eyeRX}" cy="${eyeY}" rx="${s*0.04}" ry="${s*0.045}" fill="white" transform="translate(-${s*0.015},-${s*0.015})"/>
+      <!-- raised brows -->
+      <path d="M${eyeLX - s*0.055} ${eyeY - s*0.12} Q${eyeLX} ${eyeY - s*0.15} ${eyeLX + s*0.055} ${eyeY - s*0.12}" stroke="${p.accent}" stroke-width="${s*0.022}" stroke-linecap="round" fill="none"/>
+      <path d="M${eyeRX - s*0.055} ${eyeY - s*0.12} Q${eyeRX} ${eyeY - s*0.15} ${eyeRX + s*0.055} ${eyeY - s*0.12}" stroke="${p.accent}" stroke-width="${s*0.022}" stroke-linecap="round" fill="none"/>
+    `;
+  } else {
+    // neutral
+    eyesSVG = `
+      <ellipse cx="${eyeLX}" cy="${eyeY}" rx="${s*0.055}" ry="${s*0.065}" fill="${p.accent}"/>
+      <ellipse cx="${eyeLX}" cy="${eyeY}" rx="${s*0.028}" ry="${s*0.035}" fill="white" transform="translate(-${s*0.012},-${s*0.015})"/>
+      <ellipse cx="${eyeRX}" cy="${eyeY}" rx="${s*0.055}" ry="${s*0.065}" fill="${p.accent}"/>
+      <ellipse cx="${eyeRX}" cy="${eyeY}" rx="${s*0.028}" ry="${s*0.035}" fill="white" transform="translate(-${s*0.012},-${s*0.015})"/>
+    `;
+  }
+
+  // Nose
+  const noseY = headCY + headR * 0.3;
+  const noseSVG = `<ellipse cx="${headCX}" cy="${noseY}" rx="${s*0.032}" ry="${s*0.022}" fill="${p.accent}" opacity="0.9"/>`;
+
+  // Mouth
+  let mouthSVG = '';
+  if (mood === 'happy') {
+    mouthSVG = `<path d="M${headCX - s*0.055} ${noseY + s*0.035} Q${headCX} ${noseY + s*0.085} ${headCX + s*0.055} ${noseY + s*0.035}" stroke="${p.accent}" stroke-width="${s*0.022}" fill="none" stroke-linecap="round"/>`;
+  } else if (mood === 'sad' || mood === 'angry') {
+    mouthSVG = `<path d="M${headCX - s*0.055} ${noseY + s*0.065} Q${headCX} ${noseY + s*0.025} ${headCX + s*0.055} ${noseY + s*0.065}" stroke="${p.accent}" stroke-width="${s*0.022}" fill="none" stroke-linecap="round"/>`;
+  } else if (mood === 'scared') {
+    mouthSVG = `<ellipse cx="${headCX}" cy="${noseY + s*0.06}" rx="${s*0.03}" ry="${s*0.03}" fill="${p.accent}" opacity="0.8"/>`;
+  } else {
+    mouthSVG = `<path d="M${headCX - s*0.05} ${noseY + s*0.045} L${headCX + s*0.05} ${noseY + s*0.045}" stroke="${p.accent}" stroke-width="${s*0.022}" fill="none" stroke-linecap="round"/>`;
+  }
+
+  // Whiskers
+  const wY = noseY + s * 0.01;
+  const whiskersSVG = `
+    <line x1="${headCX - s*0.06}" y1="${wY - s*0.015}" x2="${headCX - s*0.22}" y2="${wY - s*0.03}" stroke="${p.accent}" stroke-width="${s*0.014}" stroke-linecap="round" opacity="0.5"/>
+    <line x1="${headCX - s*0.06}" y1="${wY + s*0.015}" x2="${headCX - s*0.22}" y2="${wY + s*0.02}" stroke="${p.accent}" stroke-width="${s*0.014}" stroke-linecap="round" opacity="0.5"/>
+    <line x1="${headCX + s*0.06}" y1="${wY - s*0.015}" x2="${headCX + s*0.22}" y2="${wY - s*0.03}" stroke="${p.accent}" stroke-width="${s*0.014}" stroke-linecap="round" opacity="0.5"/>
+    <line x1="${headCX + s*0.06}" y1="${wY + s*0.015}" x2="${headCX + s*0.22}" y2="${wY + s*0.02}" stroke="${p.accent}" stroke-width="${s*0.014}" stroke-linecap="round" opacity="0.5"/>
+  `;
+
+  // Tail
+  const tailSVG = `
+    <path d="M${cx + bodyW*0.45} ${bodyY + bodyH*0.1} Q${cx + bodyW*0.9} ${bodyY - bodyH*0.2} ${cx + bodyW*0.75} ${bodyY - bodyH*0.5}"
+      stroke="${p.body}" stroke-width="${s*0.09}" fill="none" stroke-linecap="round" opacity="0.9"/>
+    <path d="M${cx + bodyW*0.45} ${bodyY + bodyH*0.1} Q${cx + bodyW*0.9} ${bodyY - bodyH*0.2} ${cx + bodyW*0.75} ${bodyY - bodyH*0.5}"
+      stroke="${p.accent}" stroke-width="${s*0.04}" fill="none" stroke-linecap="round" opacity="0.25"/>
+  `;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
+    <!-- Tail -->
+    ${tailSVG}
+    <!-- Body -->
+    <ellipse cx="${bodyX}" cy="${bodyY}" rx="${bodyW}" ry="${bodyH}" fill="${p.body}"/>
+    <!-- Belly -->
+    <ellipse cx="${bodyX}" cy="${bodyY + bodyH*0.1}" rx="${bodyW*0.55}" ry="${bodyH*0.6}" fill="${p.inner}" opacity="0.7"/>
+    <!-- Ears (back) -->
+    <polygon points="${headCX - headR*0.55},${headCY - headR*0.75} ${headCX - headR*0.2},${headCY - headR*1.25} ${headCX + headR*0.05},${headCY - headR*0.7}" fill="${p.ear}"/>
+    <polygon points="${headCX + headR*0.55},${headCY - headR*0.75} ${headCX + headR*0.2},${headCY - headR*1.25} ${headCX - headR*0.05},${headCY - headR*0.7}" fill="${p.ear}"/>
+    <!-- Head -->
+    <circle cx="${headCX}" cy="${headCY}" r="${headR}" fill="${p.body}"/>
+    <!-- Ear inner -->
+    <polygon points="${headCX - headR*0.5},${headCY - headR*0.72} ${headCX - headR*0.22},${headCY - headR*1.12} ${headCX + headR*0.0},${headCY - headR*0.68}" fill="${p.accent}" opacity="0.35"/>
+    <polygon points="${headCX + headR*0.5},${headCY - headR*0.72} ${headCX + headR*0.22},${headCY - headR*1.12} ${headCX - headR*0.0},${headCY - headR*0.68}" fill="${p.accent}" opacity="0.35"/>
+    <!-- Eyes -->
+    ${eyesSVG}
+    <!-- Whiskers -->
+    ${whiskersSVG}
+    <!-- Nose -->
+    ${noseSVG}
+    <!-- Mouth -->
+    ${mouthSVG}
+  </svg>`;
+}
+
+/* ════════════════════════════════════
+   STATE
+════════════════════════════════════ */
+const state = {
+  current: 's0',
+  history: ['s0'],
+  childName: '',
+  childAge: 7,
+  relationship: null,
+  mascotName: 'Mili',
+  mascotColor: 'purple',
+  selectedChoice: null,
+  selectedChoiceLabel: null,
+  selectedEmotion: null,
+  weekOffset: 0,
+  breatheTimer: null,
+  loadingTimer: null,
+  breatheCycle: 0,
+};
+
+/* ════════════════════════════════════
+   SCREEN NAVIGATION
+════════════════════════════════════ */
+function goToScreen(id) {
+  if (id === state.current) return;
+
+  const prev = document.getElementById('screen-' + state.current);
+  const next = document.getElementById('screen-' + id);
+  if (!next) return;
+
+  // Cancel timers if leaving those screens
+  if (state.current === 's8' && state.loadingTimer) {
+    clearTimeout(state.loadingTimer);
+    state.loadingTimer = null;
+  }
+  if (state.current === 's15' && state.breatheTimer) {
+    clearTimeout(state.breatheTimer);
+    state.breatheTimer = null;
+  }
+
+  // Animate out
+  if (prev) {
+    prev.classList.remove('active');
+    prev.classList.add('exit-left');
+    setTimeout(() => prev.classList.remove('exit-left'), 400);
+  }
+
+  // Animate in
+  next.classList.add('active');
+  // Scroll to top for scrollable screens
+  next.scrollTop = 0;
+
+  state.history.push(id);
+  state.current = id;
+
+  updateProgressBar();
+  updateBackButton();
+  updateDevDots();
+  updateDynamicContent();
+  renderLunasInScreen(id);
+
+  // Screen-specific actions
+  if (id === 's8') startLoading();
+  if (id === 's11') resetCareScreen();
+  if (id === 's13') resetEmotionScreen();
+  if (id === 's16') showStickerAnim();
+}
+
+function goBack() {
+  if (state.history.length > 1) {
+    state.history.pop();
+    const prev = state.history[state.history.length - 1];
+    state.history.pop(); // goToScreen will push it again
+    goToScreen(prev);
+  }
+}
+
+/* ════════════════════════════════════
+   PROGRESS BAR
+════════════════════════════════════ */
+const PROGRESS_SCREENS = { s4: 25, s5: 50, s6: 75, s7: 100 };
+
+function updateProgressBar() {
+  const wrap = document.getElementById('progressWrap');
+  const fill = document.getElementById('progressFill');
+  const pct = PROGRESS_SCREENS[state.current];
+  if (pct !== undefined) {
+    wrap.classList.add('visible');
+    fill.style.width = pct + '%';
+  } else {
+    wrap.classList.remove('visible');
+  }
+}
+
+/* ════════════════════════════════════
+   BACK BUTTON
+════════════════════════════════════ */
+function updateBackButton() {
+  const btn = document.getElementById('backBtn');
+  const backScreens = ['s3','s4','s5','s6','s7'];
+  if (backScreens.includes(state.current)) {
+    btn.classList.add('visible');
+  } else {
+    btn.classList.remove('visible');
+  }
+}
+
+/* ════════════════════════════════════
+   DEV DOTS
+════════════════════════════════════ */
+function updateDevDots() {
+  document.querySelectorAll('.dev-dot').forEach(dot => dot.classList.remove('active'));
+  const activeDot = document.getElementById('dot-' + state.current);
+  if (activeDot) activeDot.classList.add('active');
+}
+
+/* ════════════════════════════════════
+   DYNAMIC CONTENT
+════════════════════════════════════ */
+function updateDynamicContent() {
+  const name = state.childName || 'tu hijo/a';
+  document.querySelectorAll('[data-name]').forEach(el => { el.textContent = name; });
+
+  const mname = state.mascotName || 'Mili';
+  document.querySelectorAll('[data-mascot]').forEach(el => { el.textContent = mname; });
+}
+
+/* ════════════════════════════════════
+   LUNA RENDERS
+════════════════════════════════════ */
+const LUNA_CONFIGS = {
+  's0-luna':  { mood: 'happy',   size: 80 },
+  's1-luna':  { mood: 'neutral', size: 80 },
+  's2-luna':  { mood: 'happy',   size: 160 },
+  's4-luna':  { mood: 'neutral', size: 130 },
+  's8-luna':  { mood: 'happy',   size: 200 },
+  's9-luna':  { mood: 'happy',   size: 200 },
+  's10-luna': { mood: 'happy',   size: 160 },
+  's11-luna': { mood: 'neutral', size: 180 },
+  's11-luna-happy': { mood: 'happy', size: 160 },
+  's12-luna': { mood: 'happy',   size: 140 },
+  's13-luna': { mood: 'neutral', size: 120 },
+  's14-luna': { mood: 'happy',   size: 160 },
+  's15-luna': { mood: 'happy',   size: 80 },
+  's16-luna': { mood: 'happy',   size: 120 },
+  's17-luna': { mood: 'happy',   size: 200 },
+};
+
+function renderLunasInScreen(screenId) {
+  Object.keys(LUNA_CONFIGS).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      const cfg = LUNA_CONFIGS[id];
+      el.innerHTML = lunaHTML(cfg.mood, state.mascotColor, cfg.size);
+    }
+  });
+  // Update glow
+  const glow = document.getElementById('lunaGlow');
+  if (glow) glow.style.background = GLOW_COLORS[state.mascotColor] || '#C4BCFF';
+}
+
+/* ════════════════════════════════════
+   ONBOARDING INPUTS
+════════════════════════════════════ */
+function updateName() {
+  const val = document.getElementById('nameInput').value.trim();
+  state.childName = val;
+  updateDynamicContent();
+  document.getElementById('btnName').disabled = val.length < 2;
+}
+
+function selectAge(age) {
+  state.childAge = age;
+  document.querySelectorAll('.age-chip').forEach(c => c.classList.remove('selected'));
+  const chip = document.getElementById('age-' + age);
+  if (chip) chip.classList.add('selected');
+}
+
+function selectRelationship(rel) {
+  state.relationship = rel;
+  document.querySelectorAll('.rel-chip').forEach(c => c.classList.remove('selected'));
+  const chip = document.getElementById('rel-' + rel);
+  if (chip) chip.classList.add('selected');
+  document.getElementById('btnRel').disabled = false;
+}
+
+/* ════════════════════════════════════
+   LOADING SCREEN
+════════════════════════════════════ */
+function startLoading() {
+  const fill = document.getElementById('loadingFill');
+  const label = document.getElementById('loadingLabel');
+  if (!fill) return;
+  fill.classList.remove('animate');
+  label.classList.remove('visible');
+  void fill.offsetWidth;
+  fill.classList.add('animate');
+  setTimeout(() => label.classList.add('visible'), 600);
+  state.loadingTimer = setTimeout(() => {
+    state.loadingTimer = null;
+    if (state.current === 's8') goToScreen('s9');
+  }, 3200);
+}
+
+/* ════════════════════════════════════
+   MASCOT SELECTION
+════════════════════════════════════ */
+function selectMascotColor(colorKey) {
+  state.mascotColor = colorKey;
+  document.querySelectorAll('.color-circle').forEach(c => c.classList.remove('selected'));
+  const cc = document.getElementById('cc-' + colorKey);
+  if (cc) cc.classList.add('selected');
+  renderLunasInScreen('s10');
+}
+
+function updateMascotName() {
+  const val = document.getElementById('mascotInput').value.trim();
+  state.mascotName = val || 'Mili';
+  updateDynamicContent();
+}
+
+/* ════════════════════════════════════
+   CARE SCREEN
+════════════════════════════════════ */
+function resetCareScreen() {
+  const main = document.getElementById('careMain');
+  const thanks = document.getElementById('careThanks');
+  if (main) main.style.display = 'flex';
+  if (thanks) thanks.classList.remove('visible');
+  // Re-render luna for care screen
+  const s11LunaEl = document.getElementById('s11-luna');
+  if (s11LunaEl) s11LunaEl.innerHTML = lunaHTML('neutral', state.mascotColor, 180);
+}
+
+function handleCareAction(action) {
+  const main = document.getElementById('careMain');
+  const thanks = document.getElementById('careThanks');
+  const happyLuna = document.getElementById('s11-luna-happy');
+  if (main) main.style.display = 'none';
+  if (thanks) thanks.classList.add('visible');
+  if (happyLuna) happyLuna.innerHTML = lunaHTML('happy', state.mascotColor, 160);
+  setTimeout(() => {
+    if (state.current === 's11') goToScreen('s12');
+  }, 1600);
+}
+
+/* ════════════════════════════════════
+   SCENARIO CHOICE
+════════════════════════════════════ */
+function handleChoice(value, label) {
+  state.selectedChoice = value;
+  state.selectedChoiceLabel = label;
+  document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+  goToScreen('s13');
+}
+
+/* ════════════════════════════════════
+   EMOTION
+════════════════════════════════════ */
+function resetEmotionScreen() {
+  state.selectedEmotion = null;
+  document.querySelectorAll('.emotion-circle').forEach(c => c.classList.remove('selected'));
+  document.getElementById('btnEmotion').disabled = true;
+}
+
+function selectEmotion(e) {
+  state.selectedEmotion = e;
+  document.querySelectorAll('.emotion-circle').forEach(c => c.classList.remove('selected'));
+  const el = document.getElementById('emo-' + e);
+  if (el) el.classList.add('selected');
+  document.getElementById('btnEmotion').disabled = false;
+}
+
+function handleEmotion() {
+  const choice = state.selectedChoice;
+  const emo = state.selectedEmotion;
+
+  // Compute reaction
+  let mood = 'happy';
+  let title = '';
+  let text = '';
+
+  if (choice === 'yes') {
+    if (emo === 'happy') {
+      title = '¡Luna está muy contenta!';
+      text = 'Cuando ayudamos a otros nos sentimos bien por dentro. ¡Muy bien!';
+    } else if (emo === 'sad') {
+      title = 'Luna te da un abrazo';
+      text = 'Está bien sentirse triste. Ayudar también da mucho amor.';
+      mood = 'sad';
+    } else {
+      title = '¡Luna te agradece!';
+      text = 'Gracias por ayudar aunque no te sentías al 100%. Eso es ser valiente.';
+    }
+  } else if (choice === 'no') {
+    if (emo === 'angry' || emo === 'sad') {
+      title = 'Luna te entiende';
+      text = 'A veces no tenemos ganas de ayudar y está bien. ¿Quieres respirar juntos?';
+      mood = 'neutral';
+    } else {
+      title = 'Luna espera tranquila';
+      text = 'Está bien decir "ahora no". Luna sabe que la quieres igual.';
+      mood = 'neutral';
+    }
+  } else {
+    title = '¡En un ratito!';
+    text = 'Luna puede esperar un poco. Cuando estés listo, aquí estará.';
+    mood = 'happy';
+  }
+
+  // Update reaction screen
+  document.getElementById('reactionTitle').textContent = title;
+  document.getElementById('reactionText').textContent = text;
+
+  // Update s14 luna
+  const s14LunaEl = document.getElementById('s14-luna');
+  if (s14LunaEl) s14LunaEl.innerHTML = lunaHTML(mood, state.mascotColor, 160);
+
+  goToScreen('s14');
+}
+
+/* ════════════════════════════════════
+   BREATHE
+════════════════════════════════════ */
+function startBreathe() {
+  state.breatheCycle = 0;
+  updateBreatheDots(0);
+  document.getElementById('breathePhaseLabel').textContent = 'Inhala…';
+  document.getElementById('breathePhaseDesc').textContent = 'Llena tu panza de aire';
+  runBreatheCycle();
+}
+
+function runBreatheCycle() {
+  if (state.breatheCycle >= 4) {
+    setTimeout(() => {
+      if (state.current === 's15') goToScreen('s16');
+    }, 800);
+    return;
+  }
+
+  const phases = [
+    { label: 'Inhala…', desc: 'Llena tu panza de aire', dur: 3500 },
+    { label: 'Aguanta…', desc: 'Quédate quieto por un momento', dur: 1500 },
+    { label: 'Exhala…', desc: 'Suelta todo el aire', dur: 3500 },
+    { label: 'Descansa', desc: 'Un momento de calma', dur: 1000 },
+  ];
+
+  let phaseIdx = 0;
+
+  function runPhase() {
+    if (phaseIdx >= phases.length) {
+      state.breatheCycle++;
+      updateBreatheDots(state.breatheCycle);
+      if (state.current === 's15') runBreatheCycle();
+      return;
+    }
+    const phase = phases[phaseIdx];
+    document.getElementById('breathePhaseLabel').textContent = phase.label;
+    document.getElementById('breathePhaseDesc').textContent = phase.desc;
+    phaseIdx++;
+    state.breatheTimer = setTimeout(runPhase, phase.dur);
+  }
+
+  runPhase();
+}
+
+function updateBreatheDots(completed) {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('bd-' + i);
+    if (!dot) continue;
+    dot.classList.remove('done', 'active');
+    if (i < completed) dot.classList.add('done');
+    else if (i === completed) dot.classList.add('active');
+  }
+}
+
+/* ════════════════════════════════════
+   STICKER ANIMATION
+════════════════════════════════════ */
+function showStickerAnim() {
+  const star = document.getElementById('starBadge');
+  if (star) {
+    star.style.animation = 'none';
+    void star.offsetWidth;
+    star.style.animation = 'starPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both';
+  }
+}
+
+/* ════════════════════════════════════
+   SUMMARY – WEEK NAVIGATION
+════════════════════════════════════ */
+const WEEK_LABELS = [
+  '20/3 — 26/3',
+  '13/3 — 19/3',
+  '6/3 — 12/3',
+  '27/2 — 5/3',
+];
+
+function navWeek(delta) {
+  const newOffset = state.weekOffset + delta;
+  if (newOffset < 0 || newOffset >= WEEK_LABELS.length) return;
+  state.weekOffset = newOffset;
+  document.getElementById('weekLabel').textContent = WEEK_LABELS[state.weekOffset];
+  document.getElementById('weekPrev').disabled = state.weekOffset >= WEEK_LABELS.length - 1;
+  document.getElementById('weekNext').disabled = state.weekOffset <= 0;
+}
+
+/* ════════════════════════════════════
+   SUMMARY CARDS
+════════════════════════════════════ */
+function toggleSummaryCard(id) {
+  const card = document.getElementById(id);
+  if (card) card.classList.toggle('open');
+}
+
+/* ════════════════════════════════════
+   INIT
+════════════════════════════════════ */
+(function init() {
+  // Render all luna placeholders
+  renderLunasInScreen('s0');
+  updateDynamicContent();
+  updateProgressBar();
+  updateBackButton();
+  updateDevDots();
+})();
+</script>
+</body>
+</html>

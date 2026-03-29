@@ -13,7 +13,8 @@
       "backgroundColor": "#F9FAFB"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jm95.hachikokids"
     },
     "android": {
       "package": "com.jm95.hachikokids",
