@@ -31,4 +31,4 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Publicar OTA update en branch preview
-        run: eas update --branch preview --message "${{ github.event.workflow_run.head_commit.message }}"
+        run: eas update --branch preview --message "OTA update from ${{ github.event.workflow_run.head_sha }}"
