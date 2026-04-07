@@ -42,7 +42,12 @@
       ],
       "expo-secure-store",
       "expo-notifications",
-      "@sentry/react-native/expo"
+      [
+        "@sentry/react-native/expo",
+        {
+          "uploadSourceMaps": false
+        }
+      ]
     ],
     "extra": {
       "router": {
