@@ -5,6 +5,23 @@ export type Dimension =
   | "regulacion"
   | "animo";
 
+// Exportar para uso en Edge Function y summary.tsx
+export const POSITIVE_CHOICES: Record<Dimension, string[]> = {
+  instrucciones: ["helps"],
+  socializacion: ["social", "one_friend"],
+  prosocial:     ["shares", "compromises"],
+  regulacion:    ["regulates"],
+  animo:         ["great"],
+};
+
+export const NEGATIVE_CHOICES: Record<Dimension, string[]> = {
+  instrucciones: ["refuses"],
+  socializacion: ["alone"],
+  prosocial:     ["keeps"],
+  regulacion:    ["explodes"],
+  animo:         ["low"],
+};
+
 export interface Scenario {
   id: string;
   dimension: Dimension;

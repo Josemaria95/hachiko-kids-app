@@ -1,0 +1,41 @@
+name: EAS Build
+
+on:
+  # Manual desde GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Plataforma a buildear"
+        type: choice
+        options:
+          - android
+          - ios
+          - all
+        default: android
+  # Automático al crear un tag de release (ej: v1.0.1)
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: Build EAS (${{ inputs.platform || 'android' }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Ejecutar build EAS
+        run: eas build --profile preview --platform ${{ inputs.platform || 'android' }} --non-interactive

@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { Redirect, Stack } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { theme } from "../../lib/theme";
+import { ErrorBoundary } from "../../components/ErrorBoundary";
 
 export default function AppLayout() {
   const [loading, setLoading] = useState(true);
@@ -27,7 +28,11 @@ export default function AppLayout() {
     return <Redirect href="/(auth)/login" />;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <ErrorBoundary>
+      <Stack screenOptions={{ headerShown: false }} />
+    </ErrorBoundary>
+  );
 }
 
 const styles = StyleSheet.create({

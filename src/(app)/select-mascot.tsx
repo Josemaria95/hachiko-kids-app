@@ -7,6 +7,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { colors, fonts, theme } from "../../lib/theme";
@@ -21,9 +22,16 @@ const MASCOT_COLORS: { value: MascotColor; hex: string; glowHex: string }[] = [
   { value: "orange", hex: "#F97316", glowHex: "#FDBA74" },
 ];
 
+const SPORT_OPTIONS = [
+  "Fútbol", "Natación", "Básquetbol", "Tenis",
+  "Gimnasia", "Artes marciales", "Danza / Ballet", "Otro", "Ninguno",
+];
+
 export default function SelectMascotScreen() {
+  const insets = useSafeAreaInsets();
   const [mascotColor, setMascotColor] = useState<MascotColor>("purple");
   const [mascotName, setMascotName] = useState("Luna");
+  const [sport, setSport] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const selected = MASCOT_COLORS.find((mc) => mc.value === mascotColor)!;
@@ -48,6 +56,7 @@ export default function SelectMascotScreen() {
           .update({
             mascot_color: mascotColor,
             mascot_name: mascotName || "Luna",
+            sport: sport ?? "ninguno",
           })
           .eq("id", children[0].id);
       }
@@ -61,7 +70,7 @@ export default function SelectMascotScreen() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, { paddingTop: Math.max(insets.top + 20, 52), paddingBottom: Math.max(insets.bottom + 24, 48) }]}
       keyboardShouldPersistTaps="handled"
     >
       <Text style={styles.heading}>Conoce a Luna</Text>
@@ -119,6 +128,30 @@ export default function SelectMascotScreen() {
         placeholderTextColor={colors.gray[300]}
       />
 
+      {/* Sport label */}
+      <Text style={[styles.nameLabel, { marginTop: 16 }]}>¿Hace algún deporte? (opcional)</Text>
+
+      {/* Sport chips */}
+      <View style={styles.sportGrid}>
+        {SPORT_OPTIONS.map((option) => {
+          const isSelected = sport === option;
+          return (
+            <Pressable
+              key={option}
+              onPress={() => setSport(isSelected ? null : option)}
+              style={[
+                styles.sportChip,
+                isSelected && styles.sportChipSelected,
+              ]}
+            >
+              <Text style={[styles.sportChipText, isSelected && styles.sportChipTextSelected]}>
+                {option}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
       {/* CTA */}
       <Pressable
         style={({ pressed }) => [
@@ -144,7 +177,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 24,
-    paddingTop: 52,
     paddingBottom: 48,
     alignItems: "center",
   },
@@ -220,6 +252,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     color: colors.dark,
     backgroundColor: colors.white,
+  },
+  sportGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "center",
+    width: "100%",
+    marginBottom: 4,
+  },
+  sportChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 50,
+    borderWidth: 1.5,
+    borderColor: colors.gray[200],
+    backgroundColor: colors.white,
+  },
+  sportChipSelected: {
+    borderColor: colors.purple[500],
+    backgroundColor: colors.purple[50],
+  },
+  sportChipText: {
+    fontSize: 13,
+    fontFamily: fonts.body,
+    color: colors.gray[500],
+  },
+  sportChipTextSelected: {
+    color: colors.purple[700],
+    fontFamily: fonts.bodySemiBold,
+    fontWeight: "600",
   },
   startBtn: {
     width: "100%",

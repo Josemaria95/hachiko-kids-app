@@ -18,6 +18,10 @@
     },
     "android": {
       "package": "com.jm95.hachikokids",
+      "androidStatusBar": {
+        "translucent": true,
+        "backgroundColor": "#00000000"
+      },
       "adaptiveIcon": {
         "backgroundColor": "#F9FAFB",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -37,7 +41,8 @@
         }
       ],
       "expo-secure-store",
-      "expo-notifications"
+      "expo-notifications",
+      "@sentry/react-native/expo"
     ],
     "extra": {
       "router": {
@@ -48,9 +53,7 @@
       }
     },
     "owner": "jm95",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/e46b24fb-84f8-4168-81ef-99dc6d4cee06"
     }

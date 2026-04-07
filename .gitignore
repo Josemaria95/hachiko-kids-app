@@ -19,3 +19,9 @@ npm-debug.log*
 
 # Obsidian local config
 .obsidian/
+
+# Imágenes locales (capturas de pantalla, assets sin optimizar)
+images/
+
+# Supabase temp
+supabase/.temp/

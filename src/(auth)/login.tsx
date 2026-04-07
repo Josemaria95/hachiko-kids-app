@@ -10,6 +10,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { colors, fonts, theme } from "../../lib/theme";
@@ -18,6 +19,7 @@ import PetDisplay from "../../components/PetDisplay";
 type Mode = "login" | "signup";
 
 export default function LoginScreen() {
+  const insets = useSafeAreaInsets();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -81,7 +83,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
-        contentContainerStyle={s.container}
+        contentContainerStyle={[s.container, { paddingTop: Math.max(insets.top + 20, 52), paddingBottom: Math.max(insets.bottom + 16, 40) }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -167,7 +169,6 @@ const s = StyleSheet.create({
     flexGrow: 1,
     backgroundColor: colors.white,
     alignItems: "center",
-    paddingTop: 52,
     paddingHorizontal: 28,
     paddingBottom: 40,
   },

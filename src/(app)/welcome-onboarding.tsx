@@ -510,7 +510,7 @@ export default function WelcomeOnboarding() {
             {"Tu hijo cuida una mascota virtual.\nTú recibes patrones de su comportamiento\ny tips concretos cada semana."}
           </Text>
         </View>
-        <View style={p.bottom}>
+        <View style={[p.bottom, { paddingBottom: Math.max(insets.bottom + 20, 44) }]}>
           <PillButton label="Siguiente" onPress={() => setStep("value-prop")} />
           <Text style={p.footnote}>Sin diagnósticos. Sin culpa. Solo claridad.</Text>
         </View>
@@ -591,7 +591,7 @@ export default function WelcomeOnboarding() {
           <InfoBlock text="Para personalizar la experiencia y que Luna lo llame por su nombre en cada sesión." />
         </View>
 
-        <View style={p.bottom}>
+        <View style={[p.bottom, { paddingBottom: Math.max(insets.bottom + 20, 44) }]}>
           <PillButton
             label="Siguiente"
             disabled={!valid}
@@ -640,7 +640,7 @@ export default function WelcomeOnboarding() {
           />
         </ScrollView>
 
-        <View style={p.bottom}>
+        <View style={[p.bottom, { paddingBottom: Math.max(insets.bottom + 20, 44) }]}>
           <PillButton
             label="Siguiente"
             disabled={childAge === null}
@@ -688,7 +688,7 @@ export default function WelcomeOnboarding() {
           <InfoBlock text="Para personalizar los tips y recomendaciones que recibas cada semana." />
         </ScrollView>
 
-        <View style={p.bottom}>
+        <View style={[p.bottom, { paddingBottom: Math.max(insets.bottom + 20, 44) }]}>
           <PillButton
             label="Siguiente"
             disabled={!relationship}
@@ -753,7 +753,7 @@ export default function WelcomeOnboarding() {
           </View>
         </ScrollView>
 
-        <View style={p.bottom}>
+        <View style={[p.bottom, { paddingBottom: Math.max(insets.bottom + 20, 44) }]}>
           <PillButton
             label="Acepto y continúo"
             variant="mint"

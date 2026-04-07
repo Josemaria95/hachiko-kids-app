@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hachiko Kids — Onboarding Padres</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ─── CSS Variables ─── */
+:root {
+  --purple-50: #F0EDFF;
+  --purple-100: #D4CCFF;
+  --purple-500: #7B61FF;
+  --purple-700: #5A3FD6;
+  --mint-50: #ECFDF5;
+  --mint-500: #34D399;
+  --mint-700: #059669;
+  --orange-50: #FFF7ED;
+  --orange-500: #F97316;
+  --orange-700: #C2410C;
+  --gray-50: #F9FAFB;
+  --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB;
+  --gray-500: #6B7280;
+  --gray-700: #374151;
+  --gray-900: #111827;
+  --dark: #1E1145;
+  --cream: #FFF8F0;
+  --blue-light: #F0F7FF;
+  --white: #FFFFFF;
+
+  --font-display: 'Fredoka', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 50px;
+}
+
+/* ─── Reset ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: var(--font-body);
+  background: var(--purple-50);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px;
+}
+button { cursor: pointer; border: none; font-family: inherit; }
+input { font-family: inherit; }
+img { max-width: 100%; display: block; }
+
+/* ─── Phone Frame ─── */
+.phone-frame {
+  width: 100%;
+  max-width: 375px;
+  min-height: 780px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 32px;
+  box-shadow: 0 32px 80px rgba(30, 17, 69, 0.22), 0 4px 16px rgba(30, 17, 69, 0.08);
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Progress Bar ─── */
+.progress-track {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--gray-200);
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.progress-track.visible { opacity: 1; }
+.progress-fill {
+  height: 100%;
+  background: var(--purple-500);
+  border-radius: 0 2px 2px 0;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 0%;
+}
+
+/* ─── Back Button ─── */
+.back-btn {
+  position: absolute;
+  top: 20px; left: 20px;
+  z-index: 50;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 50%;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--dark);
+  font-size: 1.2rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  box-shadow: 0 2px 8px rgba(30,17,69,0.1);
+}
+.back-btn.visible { opacity: 1; pointer-events: all; }
+.back-btn:hover { background: white; transform: scale(1.05); }
+
+/* ─── Screens ─── */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  opacity: 0;
+  transform: translateX(24px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+.screen.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
+}
+.screen.exit {
+  opacity: 0;
+  transform: translateX(-24px);
+}
+
+.screen-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 28px 28px;
+  overflow-y: auto;
+}
+
+/* ─── Backgrounds per phase ─── */
+.screen-welcome { background: var(--white); }
+.screen-value   { background: var(--white); }
+.screen-name    { background: var(--cream); }
+.screen-age     { background: var(--cream); }
+.screen-relation{ background: var(--cream); }
+.screen-privacy { background: var(--blue-light); }
+.screen-loading { background: linear-gradient(155deg, #F0EDFF 0%, #E8E4FF 100%); }
+.screen-handoff { background: linear-gradient(155deg, #F0EDFF 0%, #E8E4FF 100%); }
+
+/* ─── Typography ─── */
+.headline {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: var(--dark);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.headline-md {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.4rem;
+  color: var(--dark);
+  line-height: 1.25;
+}
+.body-text {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--gray-500);
+  line-height: 1.6;
+}
+.footnote {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--gray-300);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ─── Buttons ─── */
+.btn-primary {
+  background: var(--purple-500);
+  color: white;
+  border-radius: var(--radius-pill);
+  padding: 18px 32px;
+  width: 100%;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  box-shadow: 0 4px 16px rgba(123, 97, 255, 0.38);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s;
+  letter-spacing: 0.01em;
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(123, 97, 255, 0.45);
+}
+.btn-primary:active:not(:disabled) { transform: translateY(0); }
+.btn-primary:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-accent {
+  background: var(--orange-500);
+  color: white;
+  border-radius: var(--radius-pill);
+  padding: 20px 32px;
+  width: 100%;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  box-shadow: 0 4px 20px rgba(249, 115, 22, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  letter-spacing: 0.01em;
+}
+.btn-accent:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(249, 115, 22, 0.48);
+}
+.btn-accent:active { transform: translateY(0); }
+
+.btn-mint {
+  background: var(--mint-500);
+  color: white;
+  border-radius: var(--radius-pill);
+  padding: 18px 32px;
+  width: 100%;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  box-shadow: 0 4px 16px rgba(52, 211, 153, 0.38);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-mint:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(52, 211, 153, 0.45);
+}
+.btn-mint:active { transform: translateY(0); }
+
+/* ─── Info Block ─── */
+.info-block {
+  background: var(--purple-50);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.info-block .info-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.info-block p {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--gray-500);
+  line-height: 1.55;
+}
+
+/* ─── Text Input ─── */
+.text-input {
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  text-align: center;
+  padding: 16px 20px;
+  width: 100%;
+  background: white;
+  color: var(--dark);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.text-input::placeholder { color: var(--gray-300); }
+.text-input:focus {
+  border-color: var(--purple-500);
+  box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.12);
+}
+
+/* ─── Chips ─── */
+.chips-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.chip {
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-pill);
+  padding: 12px 20px;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.1s;
+}
+.chip:hover { border-color: var(--purple-100); }
+.chip.selected {
+  border-color: var(--purple-500);
+  background: var(--purple-50);
+  color: var(--purple-500);
+}
+.chip:active { transform: scale(0.96); }
+
+/* ─── Age Grid ─── */
+.age-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.age-chip {
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 16px 8px;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  background: white;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+.age-chip:hover { border-color: var(--purple-100); }
+.age-chip.selected {
+  border-color: var(--purple-500);
+  background: var(--purple-50);
+  color: var(--purple-500);
+  box-shadow: 0 2px 8px rgba(123,97,255,0.2);
+}
+.age-chip:active { transform: scale(0.94); }
+
+/* ─── Luna Image / Avatar ─── */
+.luna-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.luna-img {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  animation: float 3s ease-in-out infinite;
+}
+.luna-img-lg {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  animation: float 3s ease-in-out infinite;
+}
+.luna-img-sm {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  animation: float 2.5s ease-in-out infinite;
+}
+
+/* Luna fallback SVG shown via JS */
+.luna-fallback {
+  display: none;
+}
+
+/* ─── Value Bubbles ─── */
+.value-bubbles {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.value-bubble {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  border: 1.5px solid var(--gray-200);
+  animation: fadeInUp 0.5s ease both;
+}
+.value-bubble:nth-child(1) { animation-delay: 0.05s; }
+.value-bubble:nth-child(2) { animation-delay: 0.15s; }
+.value-bubble:nth-child(3) { animation-delay: 0.25s; }
+.bubble-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  width: 48px; height: 48px;
+  background: var(--purple-50);
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+}
+.bubble-text strong {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--dark);
+  display: block;
+}
+.bubble-text span {
+  font-family: var(--font-body);
+  font-size: 0.83rem;
+  color: var(--gray-500);
+}
+
+/* ─── Privacy List ─── */
+.privacy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.privacy-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: 0 1px 4px rgba(30,17,69,0.06);
+  animation: fadeInUp 0.4s ease both;
+}
+.privacy-item:nth-child(1) { animation-delay: 0.05s; }
+.privacy-item:nth-child(2) { animation-delay: 0.12s; }
+.privacy-item:nth-child(3) { animation-delay: 0.19s; }
+.privacy-item:nth-child(4) { animation-delay: 0.26s; }
+.privacy-icon {
+  width: 36px; height: 36px;
+  background: var(--mint-50);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.privacy-item p {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  color: var(--gray-700);
+  line-height: 1.5;
+}
+.privacy-item strong {
+  font-weight: 600;
+  color: var(--dark);
+  font-size: 0.9rem;
+}
+
+/* ─── Loading Screen ─── */
+.loading-bar-track {
+  height: 8px;
+  background: rgba(123, 97, 255, 0.18);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.loading-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--purple-500), #A78BFF);
+  border-radius: 4px;
+  width: 0%;
+}
+.loading-bar-fill.animating {
+  animation: fillBar 3s ease-in-out forwards;
+}
+
+/* ─── Phase Label ─── */
+.phase-label {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--purple-500);
+  opacity: 0.7;
+}
+
+/* ─── Restart Link ─── */
+.restart-link {
+  background: none;
+  color: var(--gray-300);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-align: center;
+  transition: color 0.15s;
+  padding: 8px;
+  width: 100%;
+}
+.restart-link:hover { color: var(--gray-500); }
+
+/* ─── Dev Nav Dots ─── */
+.dev-nav {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  background: rgba(30,17,69,0.75);
+  backdrop-filter: blur(12px);
+  padding: 8px 12px;
+  border-radius: 20px;
+  z-index: 9999;
+  align-items: center;
+}
+.dev-label {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-right: 4px;
+}
+.dev-dot {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+.dev-dot:hover { background: rgba(255,255,255,0.3); color: white; }
+.dev-dot.active { background: var(--purple-500); color: white; transform: scale(1.15); }
+
+/* ─── Animations ─── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fillBar {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-in { animation: fadeInUp 0.5s ease both; }
+
+/* ─── Spacers / Utilities ─── */
+.spacer { flex: 1; }
+.gap-4  { gap: 4px; }
+.gap-8  { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+.gap-24 { gap: 24px; }
+.gap-32 { gap: 32px; }
+.mt-4   { margin-top: 4px; }
+.mt-8   { margin-top: 8px; }
+.mt-12  { margin-top: 12px; }
+.mt-16  { margin-top: 16px; }
+.mt-20  { margin-top: 20px; }
+.mt-24  { margin-top: 24px; }
+.mt-32  { margin-top: 32px; }
+.mt-auto { margin-top: auto; }
+.text-center { text-align: center; }
+.flex-col { display: flex; flex-direction: column; }
+.w-full { width: 100%; }
+
+/* ─── Mobile ─── */
+@media (max-width: 420px) {
+  body {
+    padding: 0;
+    background: var(--white);
+    align-items: stretch;
+  }
+  .phone-frame {
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 100dvh;
+    max-width: 100%;
+  }
+  .dev-nav { bottom: 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Phone Frame ─── -->
+<div class="phone-frame" id="phoneFrame">
+
+  <!-- Progress Bar -->
+  <div class="progress-track" id="progressTrack">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <!-- Back Button -->
+  <button class="back-btn" id="backBtn" onclick="goBack()" aria-label="Volver">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+  </button>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- PANTALLA 0 — WELCOME                       -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="screen screen-welcome active" id="screen-0">
+    <div class="screen-content flex-col" style="padding-top: 56px;">
+      <!-- Luna -->
+      <div class="luna-wrap" style="margin-bottom: 8px;">
+        <img
+          class="luna-img"
+          src="../../assets/pets/gato.png"
+          alt="Luna"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+        >
+        <!-- SVG Fallback -->
+        <div class="luna-fallback luna-img" style="align-items:center; justify-content:center;">
+          <svg width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation: float 3s ease-in-out infinite;">
+            <!-- Body -->
+            <ellipse cx="70" cy="88" rx="38" ry="32" fill="#F0EDFF"/>
+            <!-- Head -->
+            <circle cx="70" cy="56" r="34" fill="#F0EDFF"/>
+            <!-- Ears -->
+            <polygon points="38,34 26,14 50,30" fill="#7B61FF"/>
+            <polygon points="102,34 114,14 90,30" fill="#7B61FF"/>
+            <polygon points="41,33 30,17 50,30" fill="#D4CCFF"/>
+            <polygon points="99,33 110,17 90,30" fill="#D4CCFF"/>
+            <!-- Eyes -->
+            <ellipse cx="57" cy="54" rx="6" ry="7" fill="#1E1145"/>
+            <ellipse cx="83" cy="54" rx="6" ry="7" fill="#1E1145"/>
+            <circle cx="59" cy="52" r="2" fill="white"/>
+            <circle cx="85" cy="52" r="2" fill="white"/>
+            <!-- Nose -->
+            <ellipse cx="70" cy="65" rx="4" ry="3" fill="#7B61FF"/>
+            <!-- Mouth -->
+            <path d="M66 68 Q70 72 74 68" stroke="#7B61FF" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <!-- Whiskers -->
+            <line x1="30" y1="62" x2="58" y2="64" stroke="#B8AAFF" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="30" y1="67" x2="58" y2="66" stroke="#B8AAFF" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="110" y1="62" x2="82" y2="64" stroke="#B8AAFF" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="110" y1="67" x2="82" y2="66" stroke="#B8AAFF" stroke-width="1.5" stroke-linecap="round"/>
+            <!-- Tail -->
+            <path d="M108 100 Q130 90 124 112 Q118 130 100 120" stroke="#7B61FF" stroke-width="8" fill="none" stroke-linecap="round"/>
+            <!-- Paws -->
+            <ellipse cx="50" cy="118" rx="14" ry="10" fill="#E8E4FF"/>
+            <ellipse cx="90" cy="118" rx="14" ry="10" fill="#E8E4FF"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Headline -->
+      <div class="animate-in" style="animation-delay:0.1s; text-align:center;">
+        <h1 class="headline" style="font-size:2rem; line-height:1.15;">
+          Entiende a tu hijo<br>a través de Luna
+        </h1>
+      </div>
+
+      <div class="animate-in mt-12" style="animation-delay:0.2s; text-align:center;">
+        <p class="body-text">
+          Tu hijo cuida una mascota virtual. Tú recibes patrones de su comportamiento cada semana.
+        </p>
+      </div>
+
+      <div class="spacer"></div>
+
+      <!-- CTA -->
+      <div class="animate-in flex-col gap-12" style="animation-delay:0.3s;">
+        <button class="btn-primary" onclick="goToStep(1)">Siguiente</button>
+        <p class="footnote">Sin diagnósticos. Sin culpa. Solo claridad.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- PANTALLA 1 — PROPUESTA DE VALOR            -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="screen screen-value" id="screen-1">
+    <div class="screen-content flex-col">
+      <div class="animate-in" style="padding-top: 24px;">
+        <p class="phase-label">Cómo funciona</p>
+        <h2 class="headline mt-8">Lo que tú recibes</h2>
+      </div>
+
+      <div class="value-bubbles mt-24">
+        <div class="value-bubble">
+          <div class="bubble-icon">📅</div>
+          <div class="bubble-text">
+            <strong>Resúmenes semanales</strong>
+            <span>Cada lunes, un resumen claro del comportamiento</span>
+          </div>
+        </div>
+        <div class="value-bubble">
+          <div class="bubble-icon">📊</div>
+          <div class="bubble-text">
+            <strong>Patrones conductuales</strong>
+            <span>Qué patrón se repite y qué puede significar</span>
+          </div>
+        </div>
+        <div class="value-bubble">
+          <div class="bubble-icon">🎯</div>
+          <div class="bubble-text">
+            <strong>Tips accionables</strong>
+            <span>Qué puedes hacer esta semana para acompañar mejor</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="animate-in" style="animation-delay:0.35s;">
+        <button class="btn-primary" onclick="goToStep(2)">Empezar configuración</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- PANTALLA 2 — NOMBRE                        -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="screen screen-name" id="screen-2">
+    <div class="screen-content flex-col" style="padding-top: 52px;">
+      <div class="animate-in">
+        <p class="phase-label">Paso 1 de 3 — Tu hijo/a</p>
+        <h2 class="headline-md mt-8">¿Cómo se llama<br>tu hijo/a?</h2>
+      </div>
+
+      <div class="animate-in mt-24" style="animation-delay:0.1s;">
+        <input
+          type="text"
+          class="text-input"
+          id="nameInput"
+          placeholder="Escribe su nombre"
+          oninput="updateName()"
+          autocomplete="off"
+          maxlength="30"
+        >
+      </div>
+
+      <div class="info-block mt-16 animate-in" style="animation-delay:0.2s;">
+        <span class="info-icon">💡</span>
+        <p>Para personalizar la experiencia y que Luna lo llame por su nombre.</p>
+      </div>
+
+      <div class="spacer"></div>
+
+      <button class="btn-primary" id="btnStep2" onclick="goToStep(3)" disabled>Siguiente</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- PANTALLA 3 — EDAD                          -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="screen screen-age" id="screen-3">
+    <div class="screen-content flex-col" style="padding-top: 52px;">
+      <div class="animate-in">
+        <p class="phase-label">Paso 2 de 3 — Tu hijo/a</p>
+        <h2 class="headline-md mt-8">¿Cuántos años tiene<br><span data-name>tu hijo/a</span>?</h2>
+      </div>
+
+      <div class="age-grid mt-24 animate-in" style="animation-delay:0.1s;" id="ageGrid">
+        <!-- Generated by JS -->
+      </div>
+
+      <div class="info-block mt-16 animate-in" style="animation-delay:0.2s;">
+        <span class="info-icon">💡</span>
+        <p>Adaptamos los escenarios y el lenguaje al nivel de desarrollo de <span data-name>tu hijo/a</span>.</p>
+      </div>
+
+      <div class="spacer"></div>
+
+      <button class="btn-primary" onclick="goToStep(4)">Siguiente</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- PANTALLA 4 — RELACIÓN                      -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="screen screen-relation" id="screen-4">
+    <div class="screen-content flex-col" style="padding-top: 52px;">
+      <div class="animate-in">
+        <p class="phase-label">Paso 3 de 3 — Tu hijo/a</p>
+        <h2 class="headline-md mt-8">¿Cuál es tu relación<br>con <span data-name>tu hijo/a</span>?</h2>
+      </div>
+
+      <div class="chips-group mt-24 animate-in" style="animation-delay:0.1s;" id="relationChips">
+        <button class="chip" onclick="selectRelationship('Mamá')">Mamá</button>
+        <button class="chip" onclick="selectRelationship('Papá')">Papá</button>
+        <button class="chip" onclick="selectRelationship('Abuelo/a')">Abuelo/a</button>
+        <button class="chip" onclick="selectRelationship('Tutor/a')">Tutor/a</button>
+        <button class="chip" onclick="selectRelationship('Otro')">Otro</button>
+      </div>
+
+      <div class="info-block mt-16 animate-in" style="animation-delay:0.2s;">
+        <span class="info-icon">💡</span>
+        <p>Para personalizar los tips y recomendaciones que recibas.</p>
+      </div>
+
+      <div class="spacer"></div>
+
+      <button class="btn-primary" id="btnStep4" onclick="goToStep(5)" disabled>Siguiente</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- PANTALLA 5 — PRIVACIDAD                    -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="screen screen-privacy" id="screen-5">
+    <div class="screen-content flex-col" style="padding-top: 52px;">
+      <div class="animate-in">
+        <p class="phase-label">Privacidad</p>
+        <h2 class="headline-md mt-8">Los datos de <span data-name>tu hijo/a</span><br>están seguros</h2>
+      </div>
+
+      <div class="privacy-list mt-24">
+        <div class="privacy-item">
+          <div class="privacy-icon">🔒</div>
+          <p><strong>Nunca vendemos datos</strong><br>La información de tu hijo jamás se vende a terceros.</p>
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-icon">🏥</div>
+          <p><strong>Sin etiquetas clínicas</strong><br>No hacemos diagnósticos ni afirmaciones clínicas.</p>
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-icon">👁️</div>
+          <p><strong>Solo tú ves la información</strong><br>La información de <span data-name>tu hijo/a</span> es exclusivamente tuya.</p>
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-icon">🗑️</div>
+          <p><strong>Control total</strong><br>Puedes eliminar todo cuando quieras, sin complicaciones.</p>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+
+      <button class="btn-mint" onclick="goToStep(6)">Acepto y continúo</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- PANTALLA 6 — LOADING                       -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="screen screen-loading" id="screen-6">
+    <div class="screen-content flex-col" style="align-items:center; justify-content:center; text-align:center; padding-top:60px; padding-bottom:60px;">
+      <!-- Luna flotando -->
+      <div class="luna-wrap" style="margin-bottom: 24px;">
+        <img
+          class="luna-img-sm"
+          src="../../assets/pets/gato.png"
+          alt="Luna"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+        >
+        <div class="luna-fallback luna-img-sm" style="align-items:center; justify-content:center;">
+          <svg width="90" height="90" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation: float 2.5s ease-in-out infinite;">
+            <ellipse cx="70" cy="88" rx="38" ry="32" fill="#F0EDFF"/>
+            <circle cx="70" cy="56" r="34" fill="#F0EDFF"/>
+            <polygon points="38,34 26,14 50,30" fill="#7B61FF"/>
+            <polygon points="102,34 114,14 90,30" fill="#7B61FF"/>
+            <ellipse cx="57" cy="54" rx="6" ry="7" fill="#1E1145"/>
+            <ellipse cx="83" cy="54" rx="6" ry="7" fill="#1E1145"/>
+            <circle cx="59" cy="52" r="2" fill="white"/>
+            <circle cx="85" cy="52" r="2" fill="white"/>
+            <ellipse cx="70" cy="65" rx="4" ry="3" fill="#7B61FF"/>
+            <path d="M108 100 Q130 90 124 112 Q118 130 100 120" stroke="#7B61FF" stroke-width="8" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <h2 class="headline-md" style="font-size:1.3rem;">Preparando el mundo<br>de Luna...</h2>
+
+      <!-- Progress Bar -->
+      <div class="loading-bar-track mt-24 w-full">
+        <div class="loading-bar-fill" id="loadingBar"></div>
+      </div>
+
+      <p class="body-text mt-16" style="font-size:0.85rem; animation: pulse 2s ease-in-out infinite;">
+        Personalizando escenarios para <span data-name>tu hijo/a</span>...
+      </p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- PANTALLA 7 — HANDOFF                       -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="screen screen-handoff" id="screen-7">
+    <div class="screen-content flex-col" style="align-items:center; text-align:center; padding-top:48px;">
+      <!-- Confetti dots decoration -->
+      <div style="position:absolute; top:0; left:0; right:0; height:200px; pointer-events:none; overflow:hidden; opacity:0.4;">
+        <div style="position:absolute; width:12px; height:12px; background:#7B61FF; border-radius:50%; top:30px; left:40px; animation: float 2s ease-in-out infinite;"></div>
+        <div style="position:absolute; width:8px; height:8px; background:#F97316; border-radius:50%; top:60px; left:80px; animation: float 2.5s ease-in-out infinite 0.3s;"></div>
+        <div style="position:absolute; width:10px; height:10px; background:#34D399; border-radius:50%; top:20px; right:50px; animation: float 3s ease-in-out infinite 0.6s;"></div>
+        <div style="position:absolute; width:6px; height:6px; background:#F97316; border-radius:50%; top:80px; right:30px; animation: float 2.2s ease-in-out infinite 0.2s;"></div>
+        <div style="position:absolute; width:14px; height:14px; background:#7B61FF; border-radius:50%; top:50px; right:100px; opacity:0.5; animation: float 3.5s ease-in-out infinite 0.8s;"></div>
+      </div>
+
+      <div class="luna-wrap animate-in">
+        <img
+          class="luna-img-lg"
+          src="../../assets/pets/gato.png"
+          alt="Luna"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+        >
+        <div class="luna-fallback luna-img-lg" style="align-items:center; justify-content:center;">
+          <svg width="170" height="170" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation: float 3s ease-in-out infinite;">
+            <ellipse cx="70" cy="88" rx="38" ry="32" fill="#F0EDFF"/>
+            <circle cx="70" cy="56" r="34" fill="#F0EDFF"/>
+            <polygon points="38,34 26,14 50,30" fill="#7B61FF"/>
+            <polygon points="102,34 114,14 90,30" fill="#7B61FF"/>
+            <polygon points="41,33 30,17 50,30" fill="#D4CCFF"/>
+            <polygon points="99,33 110,17 90,30" fill="#D4CCFF"/>
+            <ellipse cx="57" cy="54" rx="6" ry="7" fill="#1E1145"/>
+            <ellipse cx="83" cy="54" rx="6" ry="7" fill="#1E1145"/>
+            <circle cx="59" cy="52" r="2" fill="white"/>
+            <circle cx="85" cy="52" r="2" fill="white"/>
+            <ellipse cx="70" cy="65" rx="4" ry="3" fill="#7B61FF"/>
+            <path d="M66 68 Q70 72 74 68" stroke="#7B61FF" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <line x1="30" y1="62" x2="58" y2="64" stroke="#B8AAFF" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="30" y1="67" x2="58" y2="66" stroke="#B8AAFF" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="110" y1="62" x2="82" y2="64" stroke="#B8AAFF" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="110" y1="67" x2="82" y2="66" stroke="#B8AAFF" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M108 100 Q130 90 124 112 Q118 130 100 120" stroke="#7B61FF" stroke-width="8" fill="none" stroke-linecap="round"/>
+            <ellipse cx="50" cy="118" rx="14" ry="10" fill="#E8E4FF"/>
+            <ellipse cx="90" cy="118" rx="14" ry="10" fill="#E8E4FF"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="animate-in mt-16" style="animation-delay:0.15s;">
+        <h1 class="headline" style="font-size:1.85rem;">¡Pásale el teléfono<br>a <span data-name>tu hijo/a</span>!</h1>
+      </div>
+
+      <div class="animate-in mt-10" style="animation-delay:0.25s;">
+        <p class="body-text">Es hora de que <span data-name>tu hijo/a</span> conozca a Luna 🐱</p>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="flex-col gap-12 w-full animate-in" style="animation-delay:0.35s;">
+        <button class="btn-accent" onclick="alert('¡Aquí abriría la app del niño!')">¡Empezar!</button>
+        <button class="restart-link" onclick="restartDemo()">Reiniciar demo</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<!-- ─── Dev Nav ─── -->
+<div class="dev-nav" id="devNav">
+  <span class="dev-label">dev</span>
+</div>
+
+<!-- ─── JavaScript ─── -->
+<script>
+/* ── State ── */
+const state = {
+  currentStep: 0,
+  childName: '',
+  childAge: 7,
+  relationship: null,
+  loadingTimer: null,
+}
+
+/* ── DOM refs ── */
+const screens = document.querySelectorAll('.screen');
+const progressTrack = document.getElementById('progressTrack');
+const progressFill = document.getElementById('progressFill');
+const backBtn = document.getElementById('backBtn');
+
+/* ── Build age grid ── */
+(function buildAgeGrid() {
+  const grid = document.getElementById('ageGrid');
+  for (let age = 4; age <= 12; age++) {
+    const btn = document.createElement('button');
+    btn.className = 'age-chip' + (age === state.childAge ? ' selected' : '');
+    btn.textContent = age;
+    btn.setAttribute('data-age', age);
+    btn.onclick = () => selectAge(age);
+    grid.appendChild(btn);
+  }
+})();
+
+/* ── Build dev dots ── */
+(function buildDevNav() {
+  const nav = document.getElementById('devNav');
+  const labels = ['①','②','③','④','⑤','⑥','⑦','⑧'];
+  for (let i = 0; i < 8; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'dev-dot' + (i === 0 ? ' active' : '');
+    dot.textContent = labels[i];
+    dot.setAttribute('data-step', i);
+    dot.onclick = () => {
+      if (i === 6) { goToStep(6); }
+      else { goToStep(i); }
+    };
+    nav.appendChild(dot);
+  }
+})();
+
+/* ── Core navigation ── */
+function goToStep(n) {
+  if (n < 0 || n > 7) return;
+  if (state.loadingTimer) { clearTimeout(state.loadingTimer); state.loadingTimer = null; }
+
+  // Exit current screen
+  screens[state.currentStep].classList.remove('active');
+  screens[state.currentStep].classList.add('exit');
+  setTimeout(() => screens[state.currentStep < 8 ? state.currentStep : 0].classList.remove('exit'), 400);
+
+  state.currentStep = n;
+
+  // Enter new screen
+  requestAnimationFrame(() => {
+    screens[n].classList.add('active');
+    // Re-trigger animations in new screen
+    screens[n].querySelectorAll('.animate-in').forEach(el => {
+      el.style.animation = 'none';
+      void el.offsetWidth; // reflow
+      el.style.animation = '';
+    });
+  });
+
+  // Progress bar: visible steps 2-5 (pantallas 3-6 del flujo)
+  const showProgress = n >= 2 && n <= 5;
+  progressTrack.classList.toggle('visible', showProgress);
+  if (showProgress) {
+    const pct = ((n - 2) / 3) * 100;
+    progressFill.style.width = pct + '%';
+  }
+
+  // Back button: show on steps 1-5 (not on loading/handoff/welcome)
+  const showBack = n >= 1 && n <= 5;
+  backBtn.classList.toggle('visible', showBack);
+
+  // Loading screen auto-advance
+  if (n === 6) {
+    startLoading();
+  }
+
+  // Update dev dots
+  document.querySelectorAll('.dev-dot').forEach((dot, i) => {
+    dot.classList.toggle('active', i === n);
+  });
+}
+
+function goBack() {
+  if (state.currentStep > 0) goToStep(state.currentStep - 1);
+}
+
+/* ── Name handling ── */
+function updateName() {
+  const input = document.getElementById('nameInput');
+  state.childName = input.value.trim();
+  injectName();
+  const btn = document.getElementById('btnStep2');
+  btn.disabled = state.childName.length < 2;
+}
+
+function injectName() {
+  const display = state.childName || 'tu hijo/a';
+  document.querySelectorAll('[data-name]').forEach(el => {
+    el.textContent = display;
+  });
+}
+
+/* ── Age selection ── */
+function selectAge(age) {
+  state.childAge = age;
+  document.querySelectorAll('.age-chip').forEach(chip => {
+    chip.classList.toggle('selected', parseInt(chip.dataset.age) === age);
+  });
+}
+
+/* ── Relationship selection ── */
+function selectRelationship(rel) {
+  state.relationship = rel;
+  document.querySelectorAll('#relationChips .chip').forEach(chip => {
+    chip.classList.toggle('selected', chip.textContent === rel);
+  });
+  document.getElementById('btnStep4').disabled = false;
+}
+
+/* ── Loading sequence ── */
+function startLoading() {
+  const bar = document.getElementById('loadingBar');
+  // Reset animation
+  bar.classList.remove('animating');
+  void bar.offsetWidth;
+  bar.classList.add('animating');
+
+  state.loadingTimer = setTimeout(() => {
+    goToStep(7);
+  }, 3200);
+}
+
+/* ── Restart demo ── */
+function restartDemo() {
+  if (state.loadingTimer) { clearTimeout(state.loadingTimer); state.loadingTimer = null; }
+
+  // Reset state
+  state.childName = '';
+  state.childAge = 7;
+  state.relationship = null;
+
+  // Reset inputs
+  const nameInput = document.getElementById('nameInput');
+  if (nameInput) nameInput.value = '';
+
+  // Reset name display
+  injectName();
+
+  // Reset age chips
+  document.querySelectorAll('.age-chip').forEach(chip => {
+    chip.classList.toggle('selected', parseInt(chip.dataset.age) === 7);
+  });
+
+  // Reset relation chips
+  document.querySelectorAll('#relationChips .chip').forEach(chip => {
+    chip.classList.remove('selected');
+  });
+
+  // Reset buttons
+  const btn2 = document.getElementById('btnStep2');
+  if (btn2) btn2.disabled = true;
+  const btn4 = document.getElementById('btnStep4');
+  if (btn4) btn4.disabled = true;
+
+  // Reset loading bar
+  const bar = document.getElementById('loadingBar');
+  if (bar) { bar.classList.remove('animating'); bar.style.width = '0%'; }
+
+  goToStep(0);
+}
+
+/* ── Init ── */
+injectName();
+</script>
+
+</body>
+</html>

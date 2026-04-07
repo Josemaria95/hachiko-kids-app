@@ -6,12 +6,25 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test": "jest --passWithNoTests",
+    "test:ci": "jest --passWithNoTests --ci --coverage"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/**/*.test.ts",
+      "**/__tests__/**/*.test.tsx"
+    ],
+    "transform": {
+      "^.+\\.tsx?$": ["ts-jest", {}]
+    }
   },
   "dependencies": {
     "@expo-google-fonts/fredoka": "^0.4.1",
     "@expo-google-fonts/inter": "^0.4.2",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@sentry/react-native": "^8.7.0",
     "@supabase/supabase-js": "^2.49.1",
     "expo": "~54.0.0",
     "expo-constants": "~18.0.13",
@@ -30,7 +43,12 @@
     "react-native-svg": "^15.15.4"
   },
   "devDependencies": {
+    "@testing-library/react-native": "^13.3.3",
+    "@types/jest": "^30.0.0",
     "@types/react": "~18.3.0",
+    "jest": "^30.3.0",
+    "jest-expo": "^55.0.12",
+    "ts-jest": "^29.4.9",
     "typescript": "~5.8.0"
   },
   "private": true

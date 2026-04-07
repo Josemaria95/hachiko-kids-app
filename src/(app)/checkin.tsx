@@ -399,9 +399,14 @@ export default function CheckInScreen() {
   }, [child]);
 
   const handleStickerDone = useCallback(async () => {
+    // Actualizar pet_health (fire-and-forget — no bloquea el sticker)
+    if (child) {
+      supabase.rpc("refresh_pet_health", { p_child_id: child.id })
+        .then(({ error }) => { if (error) console.warn("pet_health error:", error); });
+    }
     await markDone();
     setStep("done_today");
-  }, [markDone]);
+  }, [markDone, child]);
 
   const handleLogout = useCallback(async () => {
     await supabase.auth.signOut();
@@ -441,7 +446,7 @@ export default function CheckInScreen() {
   if (step === "mascot_care" && child) {
     return (
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 24 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 24, paddingBottom: Math.max(insets.bottom + 16, 40) }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Pet */}
@@ -509,7 +514,7 @@ export default function CheckInScreen() {
 
   if (step === "scenario" && scenario && child) {
     return (
-      <View style={[styles.scenarioContainer, { paddingTop: insets.top + 20 }]}>
+      <View style={[styles.scenarioContainer, { paddingTop: insets.top + 20, paddingBottom: Math.max(insets.bottom + 16, 32) }]}>
         <PetDisplay
           mood="happy"
           name={child.mascot_name}
@@ -529,7 +534,7 @@ export default function CheckInScreen() {
   if (step === "emotion" && child) {
     return (
       <ScrollView
-        contentContainerStyle={[styles.emotionScrollContent, { paddingTop: insets.top + 20 }]}
+        contentContainerStyle={[styles.emotionScrollContent, { paddingTop: insets.top + 20, paddingBottom: Math.max(insets.bottom + 16, 40) }]}
         showsVerticalScrollIndicator={false}
       >
         <PetDisplay
@@ -562,7 +567,7 @@ export default function CheckInScreen() {
     const moodTitle = getMoodTitle(petMood);
     return (
       <ScrollView
-        contentContainerStyle={[styles.reactionScrollContent, { paddingTop: insets.top + 20 }]}
+        contentContainerStyle={[styles.reactionScrollContent, { paddingTop: insets.top + 20, paddingBottom: Math.max(insets.bottom + 16, 40) }]}
         showsVerticalScrollIndicator={false}
       >
         <PetDisplay
@@ -608,7 +613,7 @@ export default function CheckInScreen() {
     });
     return (
       <ScrollView
-        contentContainerStyle={[styles.breatheScrollContent, { paddingTop: insets.top + 20 }]}
+        contentContainerStyle={[styles.breatheScrollContent, { paddingTop: insets.top + 20, paddingBottom: Math.max(insets.bottom + 16, 40) }]}
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.breatheTitle}>Respira con {child.mascot_name}</Text>
@@ -628,6 +633,11 @@ export default function CheckInScreen() {
 
         <Text style={styles.breathePhaseLabel}>{phase.label}</Text>
         <Text style={styles.breathePhaseDesc}>{phase.desc}</Text>
+
+        {/* Cycle counter */}
+        <Text style={styles.breatheCycleCounter}>
+          {currentCycle + 1} / {TOTAL_CYCLES}
+        </Text>
 
         {/* Dots counter */}
         <View style={styles.breatheDots}>
@@ -726,7 +736,7 @@ export default function CheckInScreen() {
   if (step === "done_today" && child) {
     return (
       <ScrollView
-        contentContainerStyle={[styles.doneScrollContent, { paddingTop: insets.top + 20 }]}
+        contentContainerStyle={[styles.doneScrollContent, { paddingTop: insets.top + 20, paddingBottom: Math.max(insets.bottom + 16, 40) }]}
         showsVerticalScrollIndicator={false}
       >
         <PetDisplay
@@ -790,19 +800,22 @@ export default function CheckInScreen() {
           <Text style={styles.streakDayLabels}>{DAY_LABELS.join("  ")}</Text>
         </View>
 
-        <Pressable
-          style={({ pressed }) => [pressed && { opacity: 0.6 }]}
-          onPress={() => router.push("/(app)/summary")}
-        >
-          <Text style={styles.summaryLink}>Resumen semanal (padres) →</Text>
-        </Pressable>
-
-        <Pressable
-          style={({ pressed }) => [pressed && { opacity: 0.6 }]}
-          onPress={handleLogout}
-        >
-          <Text style={styles.logoutLink}>Cerrar sesión</Text>
-        </Pressable>
+        {/* Tarjeta para padres */}
+        <View style={styles.parentCard}>
+          <Pressable
+            style={({ pressed }) => [pressed && { opacity: 0.6 }]}
+            onPress={() => router.push("/(app)/summary")}
+          >
+            <Text style={styles.summaryLink}>Resumen semanal (padres) →</Text>
+          </Pressable>
+          <View style={styles.parentCardDivider} />
+          <Pressable
+            style={({ pressed }) => [pressed && { opacity: 0.6 }]}
+            onPress={handleLogout}
+          >
+            <Text style={styles.logoutLink}>Cerrar sesión</Text>
+          </Pressable>
+        </View>
       </ScrollView>
     );
   }
@@ -1051,6 +1064,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 4,
   },
+  breatheCycleCounter: {
+    fontSize: 17,
+    fontFamily: fonts.displaySemiBold,
+    fontWeight: "600",
+    color: colors.mint[700],
+    textAlign: "center",
+    marginTop: 10,
+  },
   breatheDots: {
     flexDirection: "row",
     gap: 8,
@@ -1181,20 +1202,38 @@ const styles = StyleSheet.create({
     textAlign: "center",
     letterSpacing: 2,
   },
+  parentCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    width: "100%",
+    alignItems: "center",
+    shadowColor: colors.gray[900],
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+    marginTop: 12,
+    gap: 10,
+  },
+  parentCardDivider: {
+    width: "60%",
+    height: 1,
+    backgroundColor: colors.gray[100],
+  },
   summaryLink: {
     fontSize: 14,
     fontFamily: fonts.bodyMedium,
     fontWeight: "500",
     color: colors.purple[500],
     textAlign: "center",
-    marginTop: 12,
   },
   logoutLink: {
     fontSize: 14,
     fontFamily: fonts.body,
-    color: colors.gray[300],
+    color: colors.gray[500],
     textAlign: "center",
-    marginTop: 4,
   },
 
   // ── error ─────────────────────────────────────────────────────────────────

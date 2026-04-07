@@ -12,6 +12,7 @@ interface Props {
   showName?: boolean;
   mascotColor?: MascotColor;
   showGlow?: boolean;
+  healthScore?: number;
 }
 
 export default function PetDisplay({
@@ -21,6 +22,7 @@ export default function PetDisplay({
   showName = false,
   mascotColor = "purple",
   showGlow = false,
+  healthScore,
 }: Props) {
   const floatAnim = useRef(new Animated.Value(0)).current;
 
@@ -44,6 +46,9 @@ export default function PetDisplay({
   }, []);
 
   const glowColor = GLOW_COLORS[mascotColor] ?? "#C4BCFF";
+  const glowOpacity = healthScore !== undefined
+    ? 0.05 + (healthScore / 100) * 0.20
+    : 0.15;
 
   return (
     <View style={styles.container}>
@@ -55,7 +60,7 @@ export default function PetDisplay({
             height: size + 40,
             borderRadius: (size + 40) / 2,
             backgroundColor: glowColor,
-            opacity: 0.5,
+            opacity: glowOpacity,
           }}
         />
       )}
