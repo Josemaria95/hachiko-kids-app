@@ -38,4 +38,34 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Ejecutar build EAS
-        run: eas build --profile preview --platform ${{ inputs.platform || 'android' }} --non-interactive
+        run: eas build --profile preview --platform ${{ inputs.platform || 'android' }} --non-interactive --wait
+
+      - name: Obtener URL del APK
+        if: ${{ inputs.platform == 'android' || inputs.platform == 'all' || inputs.platform == '' }}
+        id: apk-url
+        run: |
+          APK_URL=$(eas build:list --platform android --status finished --limit 1 --json --non-interactive | jq -r '.[0].artifacts.buildUrl')
+          echo "url=$APK_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Descargar APK
+        if: steps.apk-url.outcome == 'success' && steps.apk-url.outputs.url != 'null'
+        run: curl -L -o hachiko-kids.apk "${{ steps.apk-url.outputs.url }}"
+
+      - name: Subir APK a Cloudflare R2
+        if: steps.apk-url.outcome == 'success' && steps.apk-url.outputs.url != 'null'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          VERSION=$(jq -r '.expo.version' app.json)
+          SHA_SHORT=$(echo "${{ github.sha }}" | cut -c1-7)
+          ENDPOINT="https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com"
+          # Subir con nombre fijo (siempre el último)
+          aws s3 cp hachiko-kids.apk \
+            "s3://${{ secrets.R2_BUCKET }}/download/hachiko-kid.apk" \
+            --endpoint-url "$ENDPOINT"
+          # Subir con versión para historial
+          aws s3 cp hachiko-kids.apk \
+            "s3://${{ secrets.R2_BUCKET }}/download/hachiko-kid-${VERSION}-${SHA_SHORT}.apk" \
+            --endpoint-url "$ENDPOINT"
