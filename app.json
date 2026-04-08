@@ -47,6 +47,18 @@
         {
           "uploadSourceMaps": false
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinCompilerExtensionVersion": "1.5.1",
+            "extraGradleProps": {
+              "org.gradle.jvmargs": "-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+UseG1GC"
+            },
+            "abiFilters": ["arm64-v8a"]
+          }
+        }
       ]
     ],
     "extra": {

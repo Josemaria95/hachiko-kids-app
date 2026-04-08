@@ -25,3 +25,4 @@ images/
 
 # Supabase temp
 supabase/.temp/
+build-apk.sh
