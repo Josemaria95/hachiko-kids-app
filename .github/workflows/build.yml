@@ -63,9 +63,9 @@ jobs:
           ENDPOINT="https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com"
           # Subir con nombre fijo (siempre el último)
           aws s3 cp hachiko-kids.apk \
-            "s3://${{ secrets.R2_BUCKET }}/download/hachiko-kid.apk" \
+            "s3://${{ secrets.R2_BUCKET }}/download/hachiko-kids.apk" \
             --endpoint-url "$ENDPOINT"
           # Subir con versión para historial
           aws s3 cp hachiko-kids.apk \
-            "s3://${{ secrets.R2_BUCKET }}/download/hachiko-kid-${VERSION}-${SHA_SHORT}.apk" \
+            "s3://${{ secrets.R2_BUCKET }}/download/hachiko-kids-${VERSION}-${SHA_SHORT}.apk" \
             --endpoint-url "$ENDPOINT"
